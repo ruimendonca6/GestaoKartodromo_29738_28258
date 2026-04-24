@@ -1,30 +1,28 @@
-﻿# Kartodromo - Projeto Java (DAL + BLL)
+﻿# GestaoKartodromo_29738_28258
 
-## Estrutura do projeto
+## Membros do grupo
 
-- `kartodromo-core`:
-  - Entidades (`model`)
-  - Camada de acesso a dados (`dal`)
-  - Camada de logica de negocio (`bll`)
-  - Configuracao Hibernate (`config`)
-  - Main de demonstracao (`core/demo/CoreDemoApplication`)
+- Rui Mendonça
+- Alexandre Silva
 
-- `kartodromo-desktop`:
-  - Modulo desktop com gestao de clientes, categorias, karts, corridas e reservas
-  - Depende do `kartodromo-core`
+## Branches Principais
 
-- `kartodromo-web`:
-  - Modulo web (arranque inicial)
-  - Depende do `kartodromo-core`
+- `main:` Versão final estável
+- `develop:` Ambiente de desenvolvimento
+- `feature/nome-da-feature:` Desenvolvimento individual de funcionalidades
 
-## Main principal para a entrega
+## Processo de Trabalho
 
-Classe principal:
-- `pt.kartodromo.Main` (no modulo `kartodromo-core`)
+### Nota: Priorizar o uso do SourceTree nas interações com o Git
 
-Classe de demonstracao completa:
-- `pt.kartodromo.core.demo.CoreDemoApplication`
+### 1. Criar uma branch a partir de `develop`
 
-## Nota
+```bash
+git checkout develop
+git checkout -b feature/nome-da-feature
+```
 
-A BD usada no exemplo e H2 em memoria, configurada no `HibernateUtil`.
+### 2. Trabalhar na feature
+
+- Fazer commits frequentes
+- Utilizar mensagens de commit claras e descritivas
