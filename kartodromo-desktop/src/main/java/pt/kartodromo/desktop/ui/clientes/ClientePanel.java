@@ -22,186 +22,431 @@ import pt.kartodromo.core.model.Cliente;
 
 public class ClientePanel extends JPanel {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private final ClienteService clienteService = new ClienteService();
-
-    private final JTextField nomeField = new JTextField();
-    private final JTextField dataNascimentoField = new JTextField("2000-01-01");
-    private final JTextField emailField = new JTextField();
-    private final JTextField nivelField = new JTextField("0");
+    private final ClienteService clienteService =
+            new ClienteService();
 
     private Long clienteSelecionadoId = null;
 
-    private final DefaultTableModel clientesTableModel = new DefaultTableModel(
-            new Object[]{"ID", "Nome", "Data Nascimento", "Email", "Nível Experiência"}, 0
-    ) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-    };
+    private final JTextField nomeField =
+            new JTextField();
 
-    private final JTable clientesTable = new JTable(clientesTableModel);
+    private final JTextField dataNascimentoField =
+            new JTextField("2000-01-01");
+
+    private final JTextField emailField =
+            new JTextField();
+
+    private final JTextField nivelField =
+            new JTextField("0");
+
+    private final DefaultTableModel clientesTableModel =
+            new DefaultTableModel(
+                    new Object[]{
+                            "ID",
+                            "Nome",
+                            "Data Nascimento",
+                            "Email",
+                            "Nível Experiência"
+                    },
+                    0
+            ) {
+                @Override
+                public boolean isCellEditable(
+                        int row,
+                        int column) {
+                    return false;
+                }
+            };
+
+    private final JTable clientesTable =
+            new JTable(clientesTableModel);
 
     public ClientePanel() {
-        setLayout(new BorderLayout(12, 12));
-        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-        add(buildForm(), BorderLayout.NORTH);
-        add(buildTable(), BorderLayout.CENTER);
+        setLayout(
+                new BorderLayout(12,12)
+        );
+
+        setBorder(
+                BorderFactory.createEmptyBorder(
+                        12,12,12,12
+                )
+        );
+
+        add(
+                buildForm(),
+                BorderLayout.NORTH
+        );
+
+        add(
+                buildTable(),
+                BorderLayout.CENTER
+        );
 
         refreshData();
     }
 
     private JPanel buildForm() {
-        JButton criarButton = new JButton("Criar cliente");
-        JButton atualizarButton = new JButton("Atualizar cliente");
-        JButton limparButton = new JButton("Limpar seleção");
 
-        criarButton.addActionListener(e -> criarCliente());
-        atualizarButton.addActionListener(e -> atualizarCliente());
-        limparButton.addActionListener(e -> limparFormulario());
+        JButton criarButton =
+                new JButton("Criar cliente");
 
-        JPanel form = new JPanel(new GridLayout(6, 2, 8, 8));
-        form.setBorder(BorderFactory.createTitledBorder("Gestão de cliente"));
+        JButton atualizarButton =
+                new JButton("Atualizar cliente");
+
+        JButton removerButton =
+                new JButton("Remover cliente");
+
+        JButton limparButton =
+                new JButton("Limpar seleção");
+
+
+        criarButton.addActionListener(
+                e -> criarCliente()
+        );
+
+        atualizarButton.addActionListener(
+                e -> atualizarCliente()
+        );
+
+        removerButton.addActionListener(
+                e -> removerCliente()
+        );
+
+        limparButton.addActionListener(
+                e -> limparFormulario()
+        );
+
+        JPanel form =
+                new JPanel(
+                        new GridLayout(
+                                7,
+                                2,
+                                8,
+                                8
+                        )
+                );
+
+        form.setBorder(
+                BorderFactory.createTitledBorder(
+                        "Gestão de cliente"
+                )
+        );
 
         form.add(new JLabel("Nome"));
         form.add(nomeField);
 
-        form.add(new JLabel("Data nascimento (yyyy-MM-dd)"));
+        form.add(
+                new JLabel(
+                        "Data nascimento (yyyy-MM-dd)"
+                )
+        );
         form.add(dataNascimentoField);
 
-        form.add(new JLabel("Email"));
+        form.add(
+                new JLabel("Email")
+        );
         form.add(emailField);
 
-        form.add(new JLabel("Nível experiência (0-5)"));
+        form.add(
+                new JLabel(
+                        "Nível experiência (0-5)"
+                )
+        );
         form.add(nivelField);
 
         form.add(criarButton);
         form.add(atualizarButton);
 
-        form.add(new JLabel());
+        form.add(removerButton);
         form.add(limparButton);
 
         return form;
     }
 
     private JScrollPane buildTable() {
-        clientesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        clientesTable.setAutoCreateRowSorter(true);
 
-        clientesTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                carregarClienteSelecionado();
-            }
-        });
+        clientesTable.setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION
+        );
 
-        JScrollPane tablePane = new JScrollPane(clientesTable);
-        tablePane.setBorder(BorderFactory.createTitledBorder("Clientes"));
+        clientesTable.setAutoCreateRowSorter(
+                true
+        );
 
-        return tablePane;
+        clientesTable
+                .getSelectionModel()
+                .addListSelectionListener(e -> {
+
+                    if(!e.getValueIsAdjusting()){
+                        carregarClienteSelecionado();
+                    }
+
+                });
+
+        JScrollPane scroll =
+                new JScrollPane(
+                        clientesTable
+                );
+
+        scroll.setBorder(
+                BorderFactory.createTitledBorder(
+                        "Clientes"
+                )
+        );
+
+        return scroll;
     }
 
     private void criarCliente() {
-        try {
-            Cliente cliente = clienteService.criarCliente(
-                    nomeField.getText().trim(),
-                    LocalDate.parse(dataNascimentoField.getText().trim(), DATE_FORMAT),
-                    emailField.getText().trim(),
-                    Integer.parseInt(nivelField.getText().trim())
-            );
 
-            showInfo("Cliente criado com sucesso: " + cliente.getId());
+        try {
+
+            Cliente cliente =
+                    clienteService.criarCliente(
+                            nomeField.getText().trim(),
+                            LocalDate.parse(
+                                    dataNascimentoField
+                                            .getText()
+                                            .trim(),
+                                    DATE_FORMAT
+                            ),
+                            emailField.getText().trim(),
+                            Integer.parseInt(
+                                    nivelField
+                                            .getText()
+                                            .trim()
+                            )
+                    );
+
+            showInfo(
+                    "Cliente criado com sucesso: "
+                            + cliente.getId()
+            );
 
             limparFormulario();
             refreshData();
 
-        } catch (DateTimeParseException ex) {
-            showError("Data de nascimento inválida. Formato: yyyy-MM-dd.");
-        } catch (NumberFormatException ex) {
-            showError("O nível de experiência deve ser um número entre 0 e 5.");
-        } catch (RuntimeException ex) {
-            showError(ex.getMessage());
+        }
+
+        catch(DateTimeParseException ex){
+            showError(
+                    "Data inválida."
+            );
+        }
+
+        catch(NumberFormatException ex){
+            showError(
+                    "Nível inválido."
+            );
+        }
+
+        catch(RuntimeException ex){
+            showError(
+                    ex.getMessage()
+            );
         }
     }
 
     private void atualizarCliente() {
-        if (clienteSelecionadoId == null) {
-            showError("Selecione um cliente na tabela para atualizar.");
+
+        if(clienteSelecionadoId == null){
+            showError(
+                    "Selecione um cliente."
+            );
             return;
         }
 
-        try {
-            Cliente cliente = clienteService.atualizarCliente(
+        try{
+
+            clienteService.atualizarCliente(
                     clienteSelecionadoId,
                     nomeField.getText().trim(),
-                    LocalDate.parse(dataNascimentoField.getText().trim(), DATE_FORMAT),
+                    LocalDate.parse(
+                            dataNascimentoField
+                                    .getText()
+                                    .trim(),
+                            DATE_FORMAT
+                    ),
                     emailField.getText().trim(),
-                    Integer.parseInt(nivelField.getText().trim())
+                    Integer.parseInt(
+                            nivelField
+                                    .getText()
+                                    .trim()
+                    )
             );
 
-            showInfo("Cliente atualizado com sucesso: " + cliente.getId());
+            showInfo(
+                    "Cliente atualizado."
+            );
 
             limparFormulario();
             refreshData();
 
-        } catch (DateTimeParseException ex) {
-            showError("Data de nascimento inválida. Formato: yyyy-MM-dd.");
-        } catch (NumberFormatException ex) {
-            showError("O nível de experiência deve ser um número entre 0 e 5.");
-        } catch (RuntimeException ex) {
-            showError(ex.getMessage());
+        }
+
+        catch(Exception ex){
+            showError(
+                    ex.getMessage()
+            );
         }
     }
 
-    private void carregarClienteSelecionado() {
-        int selectedRow = clientesTable.getSelectedRow();
+    private void removerCliente() {
 
-        if (selectedRow == -1) {
+        if(clienteSelecionadoId == null){
+            showError(
+                    "Selecione cliente para remover."
+            );
             return;
         }
 
-        int modelRow = clientesTable.convertRowIndexToModel(selectedRow);
+        int confirmacao =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Deseja remover o cliente?",
+                        "Confirmar remoção",
+                        JOptionPane.YES_NO_OPTION
+                );
 
-        clienteSelecionadoId = (Long) clientesTableModel.getValueAt(modelRow, 0);
+        if(confirmacao != JOptionPane.YES_OPTION){
+            return;
+        }
 
-        nomeField.setText(String.valueOf(clientesTableModel.getValueAt(modelRow, 1)));
-        dataNascimentoField.setText(String.valueOf(clientesTableModel.getValueAt(modelRow, 2)));
-        emailField.setText(String.valueOf(clientesTableModel.getValueAt(modelRow, 3)));
-        nivelField.setText(String.valueOf(clientesTableModel.getValueAt(modelRow, 4)));
+        try{
+
+            clienteService.removerCliente(
+                    clienteSelecionadoId
+            );
+
+            showInfo(
+                    "Cliente removido com sucesso."
+            );
+
+            limparFormulario();
+            refreshData();
+
+        }
+
+        catch(Exception ex){
+            showError(
+                    ex.getMessage()
+            );
+        }
     }
 
-    private void limparFormulario() {
-        clienteSelecionadoId = null;
+    private void carregarClienteSelecionado(){
+
+        int selectedRow =
+                clientesTable.getSelectedRow();
+
+        if(selectedRow==-1){
+            return;
+        }
+
+        int modelRow =
+                clientesTable
+                        .convertRowIndexToModel(
+                                selectedRow
+                        );
+
+        clienteSelecionadoId =
+                (Long) clientesTableModel
+                        .getValueAt(
+                                modelRow,
+                                0
+                        );
+
+        nomeField.setText(
+                clientesTableModel
+                        .getValueAt(
+                                modelRow,
+                                1
+                        ).toString()
+        );
+
+        dataNascimentoField.setText(
+                clientesTableModel
+                        .getValueAt(
+                                modelRow,
+                                2
+                        ).toString()
+        );
+
+        emailField.setText(
+                clientesTableModel
+                        .getValueAt(
+                                modelRow,
+                                3
+                        ).toString()
+        );
+
+        nivelField.setText(
+                clientesTableModel
+                        .getValueAt(
+                                modelRow,
+                                4
+                        ).toString()
+        );
+    }
+
+    private void limparFormulario(){
+
+        clienteSelecionadoId=null;
 
         nomeField.setText("");
-        dataNascimentoField.setText("2000-01-01");
         emailField.setText("");
         nivelField.setText("0");
+
+        dataNascimentoField.setText(
+                "2000-01-01"
+        );
 
         clientesTable.clearSelection();
     }
 
-    public void refreshData() {
-        clientesTableModel.setRowCount(0);
+    public void refreshData(){
 
-        for (Cliente cliente : clienteService.listarClientes()) {
-            clientesTableModel.addRow(new Object[]{
-                    cliente.getId(),
-                    cliente.getNome(),
-                    cliente.getDataNascimento(),
-                    cliente.getEmail(),
-                    cliente.getNivelExperiencia()
-            });
+        clientesTableModel.setRowCount(
+                0
+        );
+
+        for(
+                Cliente c :
+                clienteService.listarClientes()
+        ){
+
+            clientesTableModel.addRow(
+                    new Object[]{
+                            c.getId(),
+                            c.getNome(),
+                            c.getDataNascimento(),
+                            c.getEmail(),
+                            c.getNivelExperiencia()
+                    }
+            );
+
         }
     }
 
-    private void showInfo(String message) {
-        JOptionPane.showMessageDialog(this, message, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+    private void showInfo(String msg){
+        JOptionPane.showMessageDialog(
+                this,
+                msg,
+                "Sucesso",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
-    private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Erro", JOptionPane.ERROR_MESSAGE);
+    private void showError(String msg){
+        JOptionPane.showMessageDialog(
+                this,
+                msg,
+                "Erro",
+                JOptionPane.ERROR_MESSAGE
+        );
     }
 }

@@ -2,13 +2,14 @@ package pt.kartodromo.core.dal;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+
 import pt.kartodromo.core.config.HibernateUtil;
 
-public abstract class GenericHibernateDao<T> implements GenericDao<T, Long> {
+public abstract class GenericHibernateDao<T> {
 
     private final Class<T> entityClass;
 
@@ -20,60 +21,98 @@ public abstract class GenericHibernateDao<T> implements GenericDao<T, Long> {
         return HibernateUtil.getSessionFactory();
     }
 
-    @Override
     public T save(T entity) {
-        return executeInsideTransaction(session -> {
-            session.persist(entity);
-            return entity;
-        });
-    }
 
-    @Override
-    public T update(T entity) {
-        return executeInsideTransaction(session -> session.merge(entity));
-    }
+        Transaction tx = null;
 
-    @Override
-    public Optional<T> findById(Long id) {
         try (Session session = getSessionFactory().openSession()) {
-            return Optional.ofNullable(session.get(entityClass, id));
+
+            tx = session.beginTransaction();
+
+            session.persist(entity);
+
+            tx.commit();
+
+            return entity;
+
+        } catch (Exception e) {
+
+            if (tx != null) {
+                tx.rollback();
+            }
+
+            throw new RuntimeException("Erro ao guardar entidade.", e);
         }
     }
 
-    @Override
-    public List<T> findAll() {
+    public T update(T entity) {
+
+        Transaction tx = null;
+
         try (Session session = getSessionFactory().openSession()) {
+
+            tx = session.beginTransaction();
+
+            T merged = (T) session.merge(entity);
+
+            tx.commit();
+
+            return merged;
+
+        } catch (Exception e) {
+
+            if (tx != null) {
+                tx.rollback();
+            }
+
+            throw new RuntimeException("Erro ao atualizar entidade.", e);
+        }
+    }
+
+    public void delete(T entity) {
+
+        Transaction tx = null;
+
+        try (Session session = getSessionFactory().openSession()) {
+
+            tx = session.beginTransaction();
+
+            session.remove(
+                session.contains(entity)
+                    ? entity
+                    : session.merge(entity)
+            );
+
+            tx.commit();
+
+        } catch (Exception e) {
+
+            if (tx != null) {
+                tx.rollback();
+            }
+
+            throw new RuntimeException("Erro ao remover entidade.", e);
+        }
+    }
+
+    public Optional<T> findById(Long id) {
+
+        try (Session session = getSessionFactory().openSession()) {
+
+            return Optional.ofNullable(
+                    session.get(entityClass, id)
+            );
+        }
+    }
+
+    public List<T> findAll() {
+
+        try (Session session = getSessionFactory().openSession()) {
+
             return session.createQuery(
-                    "from " + entityClass.getSimpleName() + " order by id",
+                    "from " + entityClass.getSimpleName(),
                     entityClass
             ).getResultList();
-        }
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        executeInsideTransaction(session -> {
-            T entity = session.get(entityClass, id);
-            if (entity != null) {
-                session.remove(entity);
-            }
-            return null;
-        });
-    }
-
-    protected <R> R executeInsideTransaction(Function<Session, R> action) {
-        Transaction transaction = null;
-
-        try (Session session = getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            R result = action.apply(session);
-            transaction.commit();
-            return result;
-        } catch (RuntimeException ex) {
-            if (transaction != null && transaction.isActive()) {
-                transaction.rollback();
-            }
-            throw ex;
         }
     }
 }
