@@ -1,6 +1,7 @@
 package pt.kartodromo.desktop;
 
 import javax.swing.SwingUtilities;
+
 import pt.kartodromo.core.config.HibernateUtil;
 import pt.kartodromo.desktop.ui.KartodromoDesktopFrame;
 

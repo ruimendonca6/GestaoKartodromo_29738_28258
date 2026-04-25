@@ -13,9 +13,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>kartodromo/kartodromo-core</module>
-        <module>kartodromo/kartodromo-desktop</module>
-        <module>kartodromo/kartodromo-web</module>
+        <module>kartodromo-core</module>
+        <module>kartodromo-desktop</module>
+        <module>kartodromo-web</module>
     </modules>
 
 </project>
