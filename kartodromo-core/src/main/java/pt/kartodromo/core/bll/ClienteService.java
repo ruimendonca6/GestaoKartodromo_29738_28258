@@ -2,6 +2,7 @@ package pt.kartodromo.core.bll;
 
 import java.time.LocalDate;
 import java.util.List;
+
 import pt.kartodromo.core.dal.ClienteDao;
 import pt.kartodromo.core.model.Cliente;
 
@@ -19,42 +20,45 @@ public class ClienteService {
 
     public Cliente criarCliente(String nome, LocalDate dataNascimento, String email, int nivelExperiencia) {
 
-        if (nome == null || nome.isBlank()) {
-            throw new BusinessException("Nome do cliente e obrigatorio.");
-        }
-
-        if (dataNascimento == null || dataNascimento.isAfter(LocalDate.now())) {
-            throw new BusinessException("Data de nascimento invalida.");
-        }
-
-        int idade = LocalDate.now().getYear() - dataNascimento.getYear();
-        if (idade < 6) {
-            throw new BusinessException("Cliente demasiado novo para participar.");
-        }
-
-        if (email == null || email.isBlank() || !email.contains("@")) {
-            throw new BusinessException("Email invalido.");
-        }
+        validarDadosCliente(nome, dataNascimento, email, nivelExperiencia);
 
         email = email.toLowerCase().trim();
 
-        if (nivelExperiencia < 0 || nivelExperiencia > 5) {
-            throw new BusinessException("Nivel de experiencia deve estar entre 0 e 5.");
-        }
-
         if (clienteDao.findByEmail(email).isPresent()) {
-            throw new BusinessException("Ja existe cliente com o email indicado.");
+            throw new BusinessException("Já existe cliente com o email indicado.");
         }
 
-        Cliente cliente = new Cliente(nome, dataNascimento, email, nivelExperiencia);
+        Cliente cliente = new Cliente(nome.trim(), dataNascimento, email, nivelExperiencia);
 
         return clienteDao.save(cliente);
+    }
+
+    public Cliente atualizarCliente(Long clienteId, String nome, LocalDate dataNascimento, String email, int nivelExperiencia) {
+
+        Cliente cliente = obterClientePorId(clienteId);
+
+        validarDadosCliente(nome, dataNascimento, email, nivelExperiencia);
+
+        email = email.toLowerCase().trim();
+
+        clienteDao.findByEmail(email).ifPresent(clienteExistente -> {
+            if (!clienteExistente.getId().equals(clienteId)) {
+                throw new BusinessException("Já existe outro cliente com o email indicado.");
+            }
+        });
+
+        cliente.setNome(nome.trim());
+        cliente.setDataNascimento(dataNascimento);
+        cliente.setEmail(email);
+        cliente.setNivelExperiencia(nivelExperiencia);
+
+        return clienteDao.update(cliente);
     }
 
     public Cliente atualizarNivelExperiencia(Long clienteId, int novoNivel) {
 
         if (novoNivel < 0 || novoNivel > 5) {
-            throw new BusinessException("Nivel de experiencia deve estar entre 0 e 5.");
+            throw new BusinessException("Nível de experiência deve estar entre 0 e 5.");
         }
 
         Cliente cliente = obterClientePorId(clienteId);
@@ -65,10 +69,35 @@ public class ClienteService {
 
     public Cliente obterClientePorId(Long clienteId) {
         return clienteDao.findById(clienteId)
-                .orElseThrow(() -> new BusinessException("Cliente nao encontrado: " + clienteId));
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + clienteId));
     }
 
     public List<Cliente> listarClientes() {
         return clienteDao.findAll();
+    }
+
+    private void validarDadosCliente(String nome, LocalDate dataNascimento, String email, int nivelExperiencia) {
+
+        if (nome == null || nome.isBlank()) {
+            throw new BusinessException("Nome do cliente é obrigatório.");
+        }
+
+        if (dataNascimento == null || dataNascimento.isAfter(LocalDate.now())) {
+            throw new BusinessException("Data de nascimento inválida.");
+        }
+
+        int idade = LocalDate.now().getYear() - dataNascimento.getYear();
+
+        if (idade < 6) {
+            throw new BusinessException("Cliente demasiado novo para participar.");
+        }
+
+        if (email == null || email.isBlank() || !email.contains("@")) {
+            throw new BusinessException("Email inválido.");
+        }
+
+        if (nivelExperiencia < 0 || nivelExperiencia > 5) {
+            throw new BusinessException("Nível de experiência deve estar entre 0 e 5.");
+        }
     }
 }
