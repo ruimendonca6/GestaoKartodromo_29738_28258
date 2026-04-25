@@ -5,16 +5,18 @@ import java.awt.GridLayout;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
 
 import pt.kartodromo.core.bll.ClienteService;
 import pt.kartodromo.core.model.Cliente;
@@ -24,14 +26,19 @@ public class ClientePanel extends JPanel {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private final ClienteService clienteService = new ClienteService();
-    private final DefaultListModel<Cliente> clientesModel = new DefaultListModel<>();
+
+    private final DefaultTableModel clientesTableModel = new DefaultTableModel(
+            new Object[]{"ID", "Nome", "Data Nascimento", "Email", "Nível Experiência"}, 0
+    );
+
+    private final JTable clientesTable = new JTable(clientesTableModel);
 
     public ClientePanel() {
         setLayout(new BorderLayout(12, 12));
         setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         add(buildForm(), BorderLayout.NORTH);
-        add(buildList(), BorderLayout.CENTER);
+        add(buildTable(), BorderLayout.CENTER);
 
         refreshData();
     }
@@ -56,6 +63,7 @@ public class ClientePanel extends JPanel {
                 showInfo("Cliente criado com sucesso: " + cliente.getId());
 
                 nomeField.setText("");
+                dataNascimentoField.setText("2000-01-01");
                 emailField.setText("");
                 nivelField.setText("0");
 
@@ -91,18 +99,29 @@ public class ClientePanel extends JPanel {
         return form;
     }
 
-    private JScrollPane buildList() {
-        JList<Cliente> clientesList = new JList<>(clientesModel);
-        JScrollPane listPane = new JScrollPane(clientesList);
-        listPane.setBorder(BorderFactory.createTitledBorder("Clientes"));
-        return listPane;
+    private JScrollPane buildTable() {
+        clientesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        clientesTable.setAutoCreateRowSorter(true);
+
+        JScrollPane tablePane = new JScrollPane(clientesTable);
+        tablePane.setBorder(BorderFactory.createTitledBorder("Clientes"));
+
+        return tablePane;
     }
 
     public void refreshData() {
-        clientesModel.clear();
+        clientesTableModel.setRowCount(0);
 
-        for (Cliente cliente : clienteService.listarClientes()) {
-            clientesModel.addElement(cliente);
+        List<Cliente> clientes = clienteService.listarClientes();
+
+        for (Cliente cliente : clientes) {
+            clientesTableModel.addRow(new Object[]{
+                    cliente.getId(),
+                    cliente.getNome(),
+                    cliente.getDataNascimento(),
+                    cliente.getEmail(),
+                    cliente.getNivelExperiencia()
+            });
         }
     }
 
