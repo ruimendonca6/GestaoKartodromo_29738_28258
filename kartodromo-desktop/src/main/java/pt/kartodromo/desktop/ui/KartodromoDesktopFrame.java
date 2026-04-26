@@ -1,6 +1,7 @@
 package pt.kartodromo.desktop.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -33,6 +35,7 @@ import pt.kartodromo.core.model.Corrida;
 import pt.kartodromo.core.model.Kart;
 import pt.kartodromo.core.model.Reserva;
 import pt.kartodromo.core.model.enums.KartEstado;
+import pt.kartodromo.core.model.enums.ReservaEstado;
 
 public class KartodromoDesktopFrame extends JFrame {
 
@@ -53,7 +56,7 @@ public class KartodromoDesktopFrame extends JFrame {
     private final DefaultListModel<Reserva> reservasAtivasModel = new DefaultListModel<>();
 
     private final DefaultComboBoxModel<Cliente> clienteReservaComboModel = new DefaultComboBoxModel<>();
-    private final DefaultComboBoxModel<Corrida> corridaReservaComboModel = new DefaultComboBoxModel<>();
+    private final DefaultComboBoxModel<Kart> kartReservaComboModel = new DefaultComboBoxModel<>();
     private final DefaultComboBoxModel<CategoriaKart> categoriaCorridaComboModel = new DefaultComboBoxModel<>();
     private final DefaultComboBoxModel<CategoriaKart> categoriaKartComboModel = new DefaultComboBoxModel<>();
     private final JList<Reserva> reservasAtivasList = new JList<>(reservasAtivasModel);
@@ -355,79 +358,178 @@ public class KartodromoDesktopFrame extends JFrame {
 
     private JPanel buildReservasTab() {
         JComboBox<Cliente> clienteCombo = new JComboBox<>(clienteReservaComboModel);
-        JComboBox<Corrida> corridaCombo = new JComboBox<>(corridaReservaComboModel);
+        JComboBox<Kart> kartCombo = new JComboBox<>(kartReservaComboModel);
+        JComboBox<ReservaEstado> estadoCombo = new JComboBox<>(ReservaEstado.values());
+        JTextField pistaField = new JTextField("Pista Completa");
+        JTextField inicioField = new JTextField("2030-01-01 10:00");
+        JTextField fimField = new JTextField("2030-01-01 10:30");
 
-        JButton reservarButton = new JButton("Reservar corrida");
-        reservarButton.addActionListener(e -> {
+        clienteCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus
+            ) {
+                String texto = "";
+                if (value instanceof Cliente) {
+                    texto = ((Cliente) value).getNome();
+                }
+                return super.getListCellRendererComponent(list, texto, index, isSelected, cellHasFocus);
+            }
+        });
+
+        kartCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus
+            ) {
+                String texto = "";
+                if (value instanceof Kart) {
+                    texto = String.valueOf(((Kart) value).getNumero());
+                }
+                return super.getListCellRendererComponent(list, texto, index, isSelected, cellHasFocus);
+            }
+        });
+
+        JButton criarButton = new JButton("Criar reserva");
+        criarButton.addActionListener(e -> {
             try {
                 Cliente cliente = (Cliente) clienteCombo.getSelectedItem();
-                Corrida corrida = (Corrida) corridaCombo.getSelectedItem();
-                if (cliente == null || corrida == null) {
-                    showError("Selecione cliente e corrida para reservar.");
+                Kart kart = (Kart) kartCombo.getSelectedItem();
+                ReservaEstado estado = (ReservaEstado) estadoCombo.getSelectedItem();
+
+                if (cliente == null || kart == null || estado == null) {
+                    showError("Selecione cliente, kart e estado.");
                     return;
                 }
 
-                Reserva reserva = reservaService.reservarCorrida(cliente.getId(), corrida.getId());
+                Reserva reserva = reservaService.criarReserva(
+                        cliente.getId(),
+                        kart.getId(),
+                        pistaField.getText(),
+                        LocalDateTime.parse(inicioField.getText().trim(), DATE_TIME_FORMAT),
+                        LocalDateTime.parse(fimField.getText().trim(), DATE_TIME_FORMAT),
+                        estado
+                );
                 showInfo("Reserva criada com sucesso: " + reserva.getId());
                 refreshAllData();
-                loadReservasAtivasCliente(cliente.getId());
+                reservasAtivasList.setSelectedValue(reserva, true);
+            } catch (DateTimeParseException ex) {
+                showError("Data/hora invalida. Formato: yyyy-MM-dd HH:mm.");
             } catch (RuntimeException ex) {
                 showError(ex.getMessage());
             }
         });
 
-        JButton listarAtivasButton = new JButton("Listar reservas ativas");
-        listarAtivasButton.addActionListener(e -> {
-            Cliente cliente = (Cliente) clienteCombo.getSelectedItem();
-            if (cliente == null) {
-                showError("Selecione um cliente.");
-                return;
-            }
-            loadReservasAtivasCliente(cliente.getId());
-        });
-
-        JButton cancelarButton = new JButton("Cancelar reserva selecionada");
-        cancelarButton.addActionListener(e -> {
+        JButton atualizarButton = new JButton("Atualizar reserva selecionada");
+        atualizarButton.addActionListener(e -> {
             Reserva reservaSelecionada = reservasAtivasList.getSelectedValue();
             if (reservaSelecionada == null) {
-                showError("Selecione uma reserva ativa para cancelar.");
+                showError("Selecione uma reserva para atualizar.");
                 return;
             }
             try {
-                reservaService.cancelarReserva(reservaSelecionada.getId());
-                showInfo("Reserva cancelada com sucesso: " + reservaSelecionada.getId());
                 Cliente cliente = (Cliente) clienteCombo.getSelectedItem();
-                if (cliente != null) {
-                    loadReservasAtivasCliente(cliente.getId());
+                Kart kart = (Kart) kartCombo.getSelectedItem();
+                ReservaEstado estado = (ReservaEstado) estadoCombo.getSelectedItem();
+                if (cliente == null || kart == null || estado == null) {
+                    showError("Selecione cliente, kart e estado.");
+                    return;
                 }
+
+                reservaService.atualizarReserva(
+                        reservaSelecionada.getId(),
+                        cliente.getId(),
+                        kart.getId(),
+                        pistaField.getText(),
+                        LocalDateTime.parse(inicioField.getText().trim(), DATE_TIME_FORMAT),
+                        LocalDateTime.parse(fimField.getText().trim(), DATE_TIME_FORMAT),
+                        estado
+                );
+                showInfo("Reserva atualizada com sucesso.");
+                refreshAllData();
+            } catch (DateTimeParseException ex) {
+                showError("Data/hora invalida. Formato: yyyy-MM-dd HH:mm.");
             } catch (RuntimeException ex) {
                 showError(ex.getMessage());
             }
         });
 
-        JPanel form = new JPanel(new GridLayout(3, 3, 8, 8));
+        JButton eliminarButton = new JButton("Eliminar reserva selecionada");
+        eliminarButton.addActionListener(e -> {
+            Reserva reservaSelecionada = reservasAtivasList.getSelectedValue();
+            if (reservaSelecionada == null) {
+                showError("Selecione uma reserva para eliminar.");
+                return;
+            }
+            try {
+                reservaService.eliminarReserva(reservaSelecionada.getId());
+                showInfo("Reserva eliminada com sucesso.");
+                refreshAllData();
+            } catch (RuntimeException ex) {
+                showError(ex.getMessage());
+            }
+        });
+
+        JButton listarButton = new JButton("Listar todas as reservas");
+        listarButton.addActionListener(e -> loadReservas());
+
+        reservasAtivasList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            Reserva reservaSelecionada = reservasAtivasList.getSelectedValue();
+            if (reservaSelecionada == null) {
+                return;
+            }
+            clienteCombo.setSelectedItem(reservaSelecionada.getCliente());
+            kartCombo.setSelectedItem(reservaSelecionada.getKart());
+            estadoCombo.setSelectedItem(reservaSelecionada.getEstado());
+            pistaField.setText(reservaSelecionada.getPistaNome());
+            inicioField.setText(reservaSelecionada.getDataHoraInicio().format(DATE_TIME_FORMAT));
+            fimField.setText(reservaSelecionada.getDataHoraFim().format(DATE_TIME_FORMAT));
+        });
+
+        JPanel form = new JPanel(new GridLayout(8, 2, 8, 8));
         form.setBorder(BorderFactory.createTitledBorder("Gestao de reservas"));
         form.add(new JLabel("Cliente"));
         form.add(clienteCombo);
-        form.add(reservarButton);
-        form.add(new JLabel("Corrida"));
-        form.add(corridaCombo);
-        form.add(listarAtivasButton);
-        form.add(new JLabel());
-        form.add(new JLabel());
-        form.add(cancelarButton);
+        form.add(new JLabel("Kart"));
+        form.add(kartCombo);
+        form.add(new JLabel("Pista"));
+        form.add(pistaField);
+        form.add(new JLabel("Inicio (yyyy-MM-dd HH:mm)"));
+        form.add(inicioField);
+        form.add(new JLabel("Fim (yyyy-MM-dd HH:mm)"));
+        form.add(fimField);
+        form.add(new JLabel("Estado"));
+        form.add(estadoCombo);
+        form.add(criarButton);
+        form.add(atualizarButton);
+        form.add(eliminarButton);
+        form.add(listarButton);
 
         reservasAtivasList.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
             String text = "Reserva #" + value.getId()
-                    + " | Corrida #" + value.getCorrida().getId()
-                    + " | " + value.getDataReserva()
+                    + " | Cliente: " + value.getCliente().getNome()
+                    + " | Kart #" + value.getKart().getNumero()
+                    + " | Pista: " + value.getPistaNome()
+                    + " | " + value.getDataHoraInicio().format(DATE_TIME_FORMAT)
+                    + " -> " + value.getDataHoraFim().format(DATE_TIME_FORMAT)
                     + " | " + value.getEstado();
             return new javax.swing.DefaultListCellRenderer()
                     .getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
         });
 
         JScrollPane listPane = new JScrollPane(reservasAtivasList);
-        listPane.setBorder(BorderFactory.createTitledBorder("Reservas ativas do cliente selecionado"));
+        listPane.setBorder(BorderFactory.createTitledBorder("Reservas"));
 
         JList<String> reservasInfoList = new JList<>(reservasModel);
         JScrollPane infoPane = new JScrollPane(reservasInfoList);
@@ -446,6 +548,7 @@ public class KartodromoDesktopFrame extends JFrame {
         refreshCategorias();
         refreshKarts();
         refreshCorridas();
+        loadReservas();
         refreshResumoReservas();
     }
 
@@ -462,25 +565,44 @@ public class KartodromoDesktopFrame extends JFrame {
     }
 
     private void refreshKarts() {
-        replaceModel(kartsModel, kartService.listarKarts());
+        List<Kart> karts = kartService.listarKarts();
+        replaceModel(kartsModel, karts);
+        replaceComboModel(kartReservaComboModel, karts);
     }
 
     private void refreshCorridas() {
         List<Corrida> corridas = corridaService.listarCorridas();
         replaceModel(corridasModel, corridas);
-        replaceComboModel(corridaReservaComboModel, corridas);
     }
 
     private void refreshResumoReservas() {
+        List<Reserva> reservas = reservaService.listarReservas();
+        int pendentes = 0;
+        int confirmadas = 0;
+        int canceladas = 0;
+        for (Reserva reserva : reservas) {
+            if (reserva.getEstado() == ReservaEstado.PENDENTE) {
+                pendentes++;
+            } else if (reserva.getEstado() == ReservaEstado.CONFIRMADA) {
+                confirmadas++;
+            } else if (reserva.getEstado() == ReservaEstado.CANCELADA) {
+                canceladas++;
+            }
+        }
+
         reservasModel.clear();
         reservasModel.addElement("Clientes registados: " + clienteService.listarClientes().size());
         reservasModel.addElement("Categorias disponiveis: " + categoriaService.listarCategorias().size());
         reservasModel.addElement("Karts registados: " + kartService.listarKarts().size());
         reservasModel.addElement("Corridas registadas: " + corridaService.listarCorridas().size());
+        reservasModel.addElement("Reservas totais: " + reservas.size());
+        reservasModel.addElement("Reservas pendentes: " + pendentes);
+        reservasModel.addElement("Reservas confirmadas: " + confirmadas);
+        reservasModel.addElement("Reservas canceladas: " + canceladas);
     }
 
-    private void loadReservasAtivasCliente(Long clienteId) {
-        replaceModel(reservasAtivasModel, reservaService.listarReservasAtivasCliente(clienteId));
+    private void loadReservas() {
+        replaceModel(reservasAtivasModel, reservaService.listarReservas());
     }
 
     private <T> void replaceModel(DefaultListModel<T> model, List<T> items) {

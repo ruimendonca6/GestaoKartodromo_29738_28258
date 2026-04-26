@@ -12,16 +12,25 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "corrida_id", nullable = false)
-    private Corrida corrida;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "kart_id", nullable = false)
+    private Kart kart;
 
-    @Column(name = "data_reserva", nullable = false)
-    private LocalDateTime dataReserva;
+    @Column(name = "pista_nome", nullable = false, length = 80)
+    private String pistaNome;
+
+    @Column(name = "data_hora_inicio", nullable = false)
+    private LocalDateTime dataHoraInicio;
+
+    @Column(name = "data_hora_fim", nullable = false)
+    private LocalDateTime dataHoraFim;
+
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -30,11 +39,21 @@ public class Reserva {
     public Reserva() {
     }
 
-    public Reserva(Cliente cliente, Corrida corrida,
-            LocalDateTime dataReserva, ReservaEstado estado) {
+    public Reserva(
+            Cliente cliente,
+            Kart kart,
+            String pistaNome,
+            LocalDateTime dataHoraInicio,
+            LocalDateTime dataHoraFim,
+            LocalDateTime dataCriacao,
+            ReservaEstado estado
+    ) {
         this.cliente = cliente;
-        this.corrida = corrida;
-        this.dataReserva = dataReserva;
+        this.kart = kart;
+        this.pistaNome = pistaNome;
+        this.dataHoraInicio = dataHoraInicio;
+        this.dataHoraFim = dataHoraFim;
+        this.dataCriacao = dataCriacao;
         this.estado = estado;
     }
 
@@ -46,12 +65,24 @@ public class Reserva {
         return cliente;
     }
 
-    public Corrida getCorrida() {
-        return corrida;
+    public Kart getKart() {
+        return kart;
     }
 
-    public LocalDateTime getDataReserva() {
-        return dataReserva;
+    public String getPistaNome() {
+        return pistaNome;
+    }
+
+    public LocalDateTime getDataHoraInicio() {
+        return dataHoraInicio;
+    }
+
+    public LocalDateTime getDataHoraFim() {
+        return dataHoraFim;
+    }
+
+    public LocalDateTime getDataCriacao() {
+        return dataCriacao;
     }
 
     public ReservaEstado getEstado() {
@@ -62,12 +93,20 @@ public class Reserva {
         this.cliente = cliente;
     }
 
-    public void setCorrida(Corrida corrida) {
-        this.corrida = corrida;
+    public void setKart(Kart kart) {
+        this.kart = kart;
     }
 
-    public void setDataReserva(LocalDateTime dataReserva) {
-        this.dataReserva = dataReserva;
+    public void setPistaNome(String pistaNome) {
+        this.pistaNome = pistaNome;
+    }
+
+    public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
+        this.dataHoraInicio = dataHoraInicio;
+    }
+
+    public void setDataHoraFim(LocalDateTime dataHoraFim) {
+        this.dataHoraFim = dataHoraFim;
     }
 
     public void setEstado(ReservaEstado estado) {
@@ -79,8 +118,10 @@ public class Reserva {
         return "Reserva{"
                 + "id=" + id
                 + ", cliente=" + cliente.getNome()
-                + ", corrida=" + corrida.getId()
-                + ", dataReserva=" + dataReserva
+                + ", kart=" + kart.getNumero()
+                + ", pistaNome='" + pistaNome + '\''
+                + ", dataHoraInicio=" + dataHoraInicio
+                + ", dataHoraFim=" + dataHoraFim
                 + ", estado=" + estado
                 + '}';
     }

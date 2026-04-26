@@ -8,13 +8,15 @@ import java.util.List;
 import pt.kartodromo.core.bll.BusinessException;
 import pt.kartodromo.core.bll.CategoriaKartService;
 import pt.kartodromo.core.bll.ClienteService;
-import pt.kartodromo.core.bll.CorridaService;
+import pt.kartodromo.core.bll.KartService;
 import pt.kartodromo.core.bll.ReservaService;
 import pt.kartodromo.core.config.HibernateUtil;
 import pt.kartodromo.core.model.CategoriaKart;
 import pt.kartodromo.core.model.Cliente;
-import pt.kartodromo.core.model.Corrida;
+import pt.kartodromo.core.model.Kart;
 import pt.kartodromo.core.model.Reserva;
+import pt.kartodromo.core.model.enums.KartEstado;
+import pt.kartodromo.core.model.enums.ReservaEstado;
 
 public class CoreDemoApplication {
 
@@ -22,7 +24,7 @@ public class CoreDemoApplication {
 
         CategoriaKartService categoriaService = new CategoriaKartService();
         ClienteService clienteService = new ClienteService();
-        CorridaService corridaService = new CorridaService();
+        KartService kartService = new KartService();
         ReservaService reservaService = new ReservaService();
 
         try {
@@ -69,43 +71,50 @@ public class CoreDemoApplication {
 
 
             /*
-             * 3 - Criar corrida
+             * 3 - Criar kart
              */
-            System.out.println("\nCriar corrida...");
+            System.out.println("\nCriar kart...");
 
-            Corrida corrida = corridaService.criarCorrida(
-                    LocalDateTime.now().plusDays(1),
-                    20,
-                    1,
-                    categoria.getId(),
-                    "Pista Completa"
+            Kart kart = kartService.criarKart(
+                    8,
+                    KartEstado.OPERACIONAL,
+                    true,
+                    categoria.getId()
             );
 
-            System.out.println("Corrida criada: " + corrida);
+            System.out.println("Kart criado: " + kart);
 
 
             /*
-             * 4 - Criar reserva válida
+             * 4 - Criar reserva valida
              */
             System.out.println("\nCriar reserva para Ana...");
 
-            Reserva reservaAna = reservaService.reservarCorrida(
+            Reserva reservaAna = reservaService.criarReserva(
                     ana.getId(),
-                    corrida.getId()
+                    kart.getId(),
+                    "Pista Completa",
+                    LocalDateTime.now().plusDays(1).withHour(10).withMinute(0).withSecond(0).withNano(0),
+                    LocalDateTime.now().plusDays(1).withHour(10).withMinute(30).withSecond(0).withNano(0),
+                    ReservaEstado.PENDENTE
             );
 
             System.out.println("Reserva criada: " + reservaAna);
 
 
             /*
-             * 5 - Tentar reserva inválida (cliente não elegível)
+             * 5 - Tentar criar reserva com sobreposicao no mesmo kart
              */
-            System.out.println("\nTentar reserva para Joao (esperado erro)...");
+            System.out.println("\nTentar criar reserva sobreposta (esperado erro)...");
 
             try {
-                reservaService.reservarCorrida(
+                reservaService.criarReserva(
                         joao.getId(),
-                        corrida.getId()
+                        kart.getId(),
+                        "Pista Completa",
+                        LocalDateTime.now().plusDays(1).withHour(10).withMinute(15).withSecond(0).withNano(0),
+                        LocalDateTime.now().plusDays(1).withHour(10).withMinute(45).withSecond(0).withNano(0),
+                        ReservaEstado.CONFIRMADA
                 );
             } catch (BusinessException e) {
                 System.out.println("Erro esperado: " + e.getMessage());
@@ -113,7 +122,7 @@ public class CoreDemoApplication {
 
 
             /*
-             * 6 - Criar cliente elegível
+             * 6 - Criar cliente adicional
              */
             System.out.println("\nCriar cliente Pedro...");
 
@@ -125,65 +134,56 @@ public class CoreDemoApplication {
             );
 
             /*
-             * 7 - Tentar reservar corrida cheia
-             */
-            System.out.println("\nTentar reservar corrida cheia...");
-
-            try {
-                reservaService.reservarCorrida(
-                        pedro.getId(),
-                        corrida.getId()
-                );
-            } catch (BusinessException e) {
-                System.out.println("Erro esperado: " + e.getMessage());
-            }
-
-
-            /*
-             * 8 - Cancelar reserva
-             */
-            System.out.println("\nCancelar reserva da Ana...");
-
-            reservaService.cancelarReserva(reservaAna.getId());
-
-            System.out.println("Reserva cancelada.");
-
-
-            /*
-             * 9 - Nova reserva após cancelamento
+             * 7 - Criar nova reserva sem sobreposicao
              */
             System.out.println("\nCriar reserva para Pedro...");
 
-            Reserva reservaPedro = reservaService.reservarCorrida(
+            Reserva reservaPedro = reservaService.criarReserva(
                     pedro.getId(),
-                    corrida.getId()
+                    kart.getId(),
+                    "Pista Completa",
+                    LocalDateTime.now().plusDays(1).withHour(11).withMinute(0).withSecond(0).withNano(0),
+                    LocalDateTime.now().plusDays(1).withHour(11).withMinute(30).withSecond(0).withNano(0),
+                    ReservaEstado.CONFIRMADA
             );
-
             System.out.println("Reserva criada: " + reservaPedro);
 
 
             /*
-             * 10 - Listar reservas do cliente
+             * 8 - Atualizar reserva da Ana para confirmada
              */
-            System.out.println("\nListar reservas ativas do Pedro...");
+            System.out.println("\nAtualizar reserva da Ana...");
 
-            List<Reserva> reservasPedro
-                    = reservaService.listarReservasAtivasCliente(pedro.getId());
+            Reserva reservaAnaAtualizada = reservaService.atualizarReserva(
+                    reservaAna.getId(),
+                    ana.getId(),
+                    kart.getId(),
+                    "Pista Completa",
+                    reservaAna.getDataHoraInicio(),
+                    reservaAna.getDataHoraFim(),
+                    ReservaEstado.CONFIRMADA
+            );
 
-            reservasPedro.forEach(System.out::println);
+            System.out.println("Reserva atualizada: " + reservaAnaAtualizada);
 
 
             /*
-             * 11 - Listar corridas do dia
+             * 9 - Listar reservas
              */
-            System.out.println("\nListar corridas do dia...");
+            System.out.println("\nListar reservas...");
 
-            List<Corrida> corridas
-                    = corridaService.listarCorridasPorDia(
-                            corrida.getDataHoraInicio().toLocalDate()
-                    );
+            List<Reserva> reservas = reservaService.listarReservas();
+            reservas.forEach(System.out::println);
 
-            corridas.forEach(System.out::println);
+            /*
+             * 10 - Eliminar reserva do Pedro
+             */
+            System.out.println("\nEliminar reserva do Pedro...");
+            reservaService.eliminarReserva(reservaPedro.getId());
+            System.out.println("Reserva eliminada.");
+
+            System.out.println("\nReservas finais:");
+            reservaService.listarReservas().forEach(System.out::println);
 
             System.out.println("\n===== DEMO CONCLUIDA =====");
 
