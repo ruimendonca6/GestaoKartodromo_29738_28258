@@ -21,11 +21,12 @@ import pt.kartodromo.core.bll.CategoriaKartService;
 import pt.kartodromo.core.bll.ClienteService;
 import pt.kartodromo.core.bll.CorridaService;
 import pt.kartodromo.core.bll.KartService;
+import pt.kartodromo.core.bll.ReservaService;
 
 public class DashboardPanel extends JPanel {
 
     private static final String BACKGROUND_IMAGE_PATH =
-            "/images/dashboardimage2.png";
+            "/images/dashboardimage1.png";
 
     private static final Color TEXT_COLOR =
             new Color(33, 33, 33);
@@ -45,6 +46,9 @@ public class DashboardPanel extends JPanel {
     private final CorridaService corridaService =
             new CorridaService();
 
+    private final ReservaService reservaService =
+            new ReservaService();
+
     private final JLabel clientesValue =
             new JLabel("0", SwingConstants.CENTER);
 
@@ -58,7 +62,7 @@ public class DashboardPanel extends JPanel {
             new JLabel("0", SwingConstants.CENTER);
 
     private final JLabel reservasValue =
-            new JLabel("-", SwingConstants.CENTER);
+            new JLabel("0", SwingConstants.CENTER);
 
     public DashboardPanel() {
         setLayout(new BorderLayout());
@@ -67,6 +71,7 @@ public class DashboardPanel extends JPanel {
                 new BackgroundPanel(BACKGROUND_IMAGE_PATH);
 
         backgroundPanel.setLayout(new BorderLayout(24, 24));
+
         backgroundPanel.setBorder(
                 BorderFactory.createEmptyBorder(
                         28,
@@ -96,9 +101,7 @@ public class DashboardPanel extends JPanel {
 
     private JPanel buildHeaderPanel() {
         JLabel title =
-                new JLabel(
-                        "Dashboard do Kartódromo"
-                );
+                new JLabel("Dashboard do Kartódromo");
 
         title.setFont(
                 new Font(
@@ -108,14 +111,10 @@ public class DashboardPanel extends JPanel {
                 )
         );
 
-        title.setForeground(
-                HEADER_TEXT_COLOR
-        );
+        title.setForeground(HEADER_TEXT_COLOR);
 
         JLabel subtitle =
-                new JLabel(
-                        "Resumo geral dos dados registados no sistema"
-                );
+                new JLabel("Resumo geral dos dados registados no sistema");
 
         subtitle.setFont(
                 new Font(
@@ -294,9 +293,7 @@ public class DashboardPanel extends JPanel {
                 )
         );
 
-        titleLabel.setForeground(
-                accentColor
-        );
+        titleLabel.setForeground(accentColor);
 
         valueLabel.setFont(
                 new Font(
@@ -306,9 +303,7 @@ public class DashboardPanel extends JPanel {
                 )
         );
 
-        valueLabel.setForeground(
-                TEXT_COLOR
-        );
+        valueLabel.setForeground(TEXT_COLOR);
 
         JLabel footerLabel =
                 new JLabel(
@@ -338,20 +333,9 @@ public class DashboardPanel extends JPanel {
                         22
                 );
 
-        card.add(
-                titleLabel,
-                BorderLayout.NORTH
-        );
-
-        card.add(
-                valueLabel,
-                BorderLayout.CENTER
-        );
-
-        card.add(
-                footerLabel,
-                BorderLayout.SOUTH
-        );
+        card.add(titleLabel, BorderLayout.NORTH);
+        card.add(valueLabel, BorderLayout.CENTER);
+        card.add(footerLabel, BorderLayout.SOUTH);
 
         JPanel cardContainer =
                 new JPanel(
@@ -359,26 +343,11 @@ public class DashboardPanel extends JPanel {
                 );
 
         cardContainer.setOpaque(false);
+        cardContainer.add(card, BorderLayout.CENTER);
+        cardContainer.add(accentBar, BorderLayout.SOUTH);
 
-        cardContainer.add(
-                card,
-                BorderLayout.CENTER
-        );
-
-        cardContainer.add(
-                accentBar,
-                BorderLayout.SOUTH
-        );
-
-        shadowPanel.add(
-                cardContainer,
-                BorderLayout.CENTER
-        );
-
-        wrapper.add(
-                shadowPanel,
-                BorderLayout.CENTER
-        );
+        shadowPanel.add(cardContainer, BorderLayout.CENTER);
+        wrapper.add(shadowPanel, BorderLayout.CENTER);
 
         return wrapper;
     }
@@ -408,8 +377,11 @@ public class DashboardPanel extends JPanel {
                 )
         );
 
-        // Temporário até o backend disponibilizar listarTodasReservas().
-        reservasValue.setText("-");
+        reservasValue.setText(
+                String.valueOf(
+                        reservaService.listarReservas().size()
+                )
+        );
     }
 
     private static class BackgroundPanel extends JPanel {
@@ -463,9 +435,7 @@ public class DashboardPanel extends JPanel {
                     )
             );
 
-            g2.setColor(
-                    Color.BLACK
-            );
+            g2.setColor(Color.BLACK);
 
             g2.fillRect(
                     0,
@@ -509,9 +479,7 @@ public class DashboardPanel extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
 
-            g2.setColor(
-                    backgroundColor
-            );
+            g2.setColor(backgroundColor);
 
             g2.fillRoundRect(
                     0,
@@ -563,9 +531,7 @@ public class DashboardPanel extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
 
-            g2.setColor(
-                    color
-            );
+            g2.setColor(color);
 
             g2.fillRoundRect(
                     0,

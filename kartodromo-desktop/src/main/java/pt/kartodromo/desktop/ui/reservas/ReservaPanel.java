@@ -1,16 +1,19 @@
 package pt.kartodromo.desktop.ui.reservas;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.GridLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -18,7 +21,11 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.CompoundBorder;
+import javax.swing.table.DefaultTableModel;
 
 import pt.kartodromo.core.bll.ClienteService;
 import pt.kartodromo.core.bll.KartService;
@@ -33,138 +40,142 @@ public class ReservaPanel extends JPanel {
     private static final DateTimeFormatter DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    private final ClienteService clienteService =
-            new ClienteService();
+    private static final Color BACKGROUND_COLOR = new Color(245, 247, 250);
+    private static final Color CARD_COLOR = Color.WHITE;
+    private static final Color BORDER_COLOR = new Color(215, 220, 225);
+    private static final Color PRIMARY_BLUE = new Color(33, 150, 243);
+    private static final Color CREATE_GREEN = new Color(46, 125, 50);
+    private static final Color UPDATE_BLUE = new Color(21, 101, 192);
+    private static final Color DELETE_RED = new Color(198, 40, 40);
+    private static final Color CLEAR_GRAY = new Color(97, 97, 97);
 
-    private final KartService kartService =
-            new KartService();
-
-    private final ReservaService reservaService =
-            new ReservaService();
-
-    private final DefaultComboBoxModel<Cliente> clienteComboModel =
-            new DefaultComboBoxModel<>();
-
-    private final DefaultComboBoxModel<Kart> kartComboModel =
-            new DefaultComboBoxModel<>();
-
-    private final DefaultListModel<Reserva> reservasModel =
-            new DefaultListModel<>();
-
-    private final JList<Reserva> reservasList =
-            new JList<>(reservasModel);
-
-    private final JTextField pistaField =
-            new JTextField("Pista Completa");
-
-    private final JTextField inicioField =
-            new JTextField("2030-01-01 10:00");
-
-    private final JTextField fimField =
-            new JTextField("2030-01-01 10:30");
-
-    private final JComboBox<Cliente> clienteCombo =
-            new JComboBox<>(clienteComboModel);
-
-    private final JComboBox<Kart> kartCombo =
-            new JComboBox<>(kartComboModel);
-
-    private final JComboBox<ReservaEstado> estadoCombo =
-            new JComboBox<>(ReservaEstado.values());
+    private final ClienteService clienteService = new ClienteService();
+    private final KartService kartService = new KartService();
+    private final ReservaService reservaService = new ReservaService();
 
     private Long reservaSelecionadaId = null;
 
+    private final JTextField pistaField = new JTextField("Pista Completa");
+    private final JTextField inicioField = new JTextField("2030-01-01 10:00");
+    private final JTextField fimField = new JTextField("2030-01-01 10:30");
+
+    private final JComboBox<Cliente> clienteCombo = new JComboBox<>();
+    private final JComboBox<Kart> kartCombo = new JComboBox<>();
+    private final JComboBox<ReservaEstado> estadoCombo =
+            new JComboBox<>(ReservaEstado.values());
+
+    private final DefaultTableModel reservasTableModel =
+            new DefaultTableModel(
+                    new Object[]{
+                            "ID",
+                            "Cliente",
+                            "Kart",
+                            "Pista",
+                            "Início",
+                            "Fim",
+                            "Estado"
+                    },
+                    0
+            ) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+    private final JTable reservasTable = new JTable(reservasTableModel);
+
     public ReservaPanel() {
-        setLayout(new BorderLayout(12, 12));
-        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        setLayout(new BorderLayout(20, 20));
+        setBackground(BACKGROUND_COLOR);
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         configureComboRenderers();
-        configureReservaRenderer();
 
-        add(buildForm(), BorderLayout.NORTH);
-        add(buildReservasList(), BorderLayout.CENTER);
+        add(createCard(buildForm()), BorderLayout.NORTH);
+        add(createCard(buildTable()), BorderLayout.CENTER);
 
         refreshData();
     }
 
     private JPanel buildForm() {
         JButton criarButton =
-                new JButton("Criar reserva");
+                createActionButton("＋ Nova", CREATE_GREEN);
 
         JButton atualizarButton =
-                new JButton("Atualizar reserva");
+                createActionButton("✎ Atualizar", UPDATE_BLUE);
 
-        JButton eliminarButton =
-                new JButton("Eliminar reserva");
+        JButton removerButton =
+                createActionButton("🗑 Remover", DELETE_RED);
 
         JButton limparButton =
-                new JButton("Limpar seleção");
+                createActionButton("↺ Limpar", CLEAR_GRAY);
 
         criarButton.addActionListener(e -> criarReserva());
         atualizarButton.addActionListener(e -> atualizarReserva());
-        eliminarButton.addActionListener(e -> eliminarReserva());
+        removerButton.addActionListener(e -> removerReserva());
         limparButton.addActionListener(e -> limparFormulario());
 
-        JPanel form =
-                new JPanel(
-                        new GridLayout(
-                                8,
-                                2,
-                                8,
-                                8
-                        )
-                );
-
-        form.setBorder(
-                BorderFactory.createTitledBorder(
-                        "Gestão de reservas"
-                )
+        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        fieldsPanel.setBackground(CARD_COLOR);
+        fieldsPanel.setBorder(
+                BorderFactory.createTitledBorder("📋 Dados da Reserva")
         );
 
-        form.add(new JLabel("Cliente"));
-        form.add(clienteCombo);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(7, 8, 7, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
 
-        form.add(new JLabel("Kart"));
-        form.add(kartCombo);
+        addFormRow(fieldsPanel, gbc, 0, "Cliente", clienteCombo);
+        addFormRow(fieldsPanel, gbc, 1, "Kart", kartCombo);
+        addFormRow(fieldsPanel, gbc, 2, "Pista", pistaField);
+        addFormRow(fieldsPanel, gbc, 3, "Início (yyyy-MM-dd HH:mm)", inicioField);
+        addFormRow(fieldsPanel, gbc, 4, "Fim (yyyy-MM-dd HH:mm)", fimField);
+        addFormRow(fieldsPanel, gbc, 5, "Estado", estadoCombo);
 
-        form.add(new JLabel("Pista"));
-        form.add(pistaField);
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        actionsPanel.setBackground(CARD_COLOR);
 
-        form.add(new JLabel("Início (yyyy-MM-dd HH:mm)"));
-        form.add(inicioField);
+        actionsPanel.add(criarButton);
+        actionsPanel.add(atualizarButton);
+        actionsPanel.add(removerButton);
+        actionsPanel.add(limparButton);
 
-        form.add(new JLabel("Fim (yyyy-MM-dd HH:mm)"));
-        form.add(fimField);
-
-        form.add(new JLabel("Estado"));
-        form.add(estadoCombo);
-
-        form.add(criarButton);
-        form.add(atualizarButton);
-
-        form.add(eliminarButton);
-        form.add(limparButton);
+        JPanel form = new JPanel(new BorderLayout(10, 10));
+        form.setBackground(CARD_COLOR);
+        form.add(fieldsPanel, BorderLayout.CENTER);
+        form.add(actionsPanel, BorderLayout.SOUTH);
 
         return form;
     }
 
-    private JScrollPane buildReservasList() {
-        reservasList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                carregarReservaSelecionada();
-            }
-        });
+    private JScrollPane buildTable() {
+        reservasTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        reservasTable.setAutoCreateRowSorter(true);
+        reservasTable.setRowHeight(32);
+        reservasTable.setFillsViewportHeight(true);
+        reservasTable.setGridColor(new Color(230, 230, 230));
+        reservasTable.setSelectionBackground(new Color(66, 133, 244));
+        reservasTable.setSelectionForeground(Color.WHITE);
 
-        JScrollPane scroll =
-                new JScrollPane(
-                        reservasList
-                );
-
-        scroll.setBorder(
-                BorderFactory.createTitledBorder(
-                        "Reservas"
-                )
+        reservasTable.getTableHeader().setReorderingAllowed(false);
+        reservasTable.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 14)
         );
+        reservasTable.getTableHeader().setBackground(PRIMARY_BLUE);
+        reservasTable.getTableHeader().setForeground(Color.WHITE);
+
+        reservasTable
+                .getSelectionModel()
+                .addListSelectionListener(e -> {
+                    if (!e.getValueIsAdjusting()) {
+                        carregarReservaSelecionada();
+                    }
+                });
+
+        JScrollPane scroll = new JScrollPane(reservasTable);
+        scroll.setBorder(BorderFactory.createTitledBorder("Reservas"));
 
         return scroll;
     }
@@ -190,21 +201,12 @@ public class ReservaPanel extends JPanel {
                             cliente.getId(),
                             kart.getId(),
                             pistaField.getText().trim(),
-                            LocalDateTime.parse(
-                                    inicioField.getText().trim(),
-                                    DATE_TIME_FORMAT
-                            ),
-                            LocalDateTime.parse(
-                                    fimField.getText().trim(),
-                                    DATE_TIME_FORMAT
-                            ),
+                            LocalDateTime.parse(inicioField.getText().trim(), DATE_TIME_FORMAT),
+                            LocalDateTime.parse(fimField.getText().trim(), DATE_TIME_FORMAT),
                             estado
                     );
 
-            showInfo(
-                    "Reserva criada com sucesso: "
-                            + reserva.getId()
-            );
+            showInfo("Reserva criada com sucesso: " + reserva.getId());
 
             limparFormulario();
             refreshData();
@@ -218,7 +220,7 @@ public class ReservaPanel extends JPanel {
 
     private void atualizarReserva() {
         if (reservaSelecionadaId == null) {
-            showError("Selecione uma reserva para atualizar.");
+            showError("Selecione uma reserva.");
             return;
         }
 
@@ -242,14 +244,8 @@ public class ReservaPanel extends JPanel {
                     cliente.getId(),
                     kart.getId(),
                     pistaField.getText().trim(),
-                    LocalDateTime.parse(
-                            inicioField.getText().trim(),
-                            DATE_TIME_FORMAT
-                    ),
-                    LocalDateTime.parse(
-                            fimField.getText().trim(),
-                            DATE_TIME_FORMAT
-                    ),
+                    LocalDateTime.parse(inicioField.getText().trim(), DATE_TIME_FORMAT),
+                    LocalDateTime.parse(fimField.getText().trim(), DATE_TIME_FORMAT),
                     estado
             );
 
@@ -265,17 +261,17 @@ public class ReservaPanel extends JPanel {
         }
     }
 
-    private void eliminarReserva() {
+    private void removerReserva() {
         if (reservaSelecionadaId == null) {
-            showError("Selecione uma reserva para eliminar.");
+            showError("Selecione uma reserva.");
             return;
         }
 
         int confirmacao =
                 JOptionPane.showConfirmDialog(
                         this,
-                        "Deseja eliminar a reserva selecionada?",
-                        "Confirmar eliminação",
+                        "Deseja remover a reserva selecionada?",
+                        "Confirmar remoção",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.WARNING_MESSAGE
                 );
@@ -285,11 +281,9 @@ public class ReservaPanel extends JPanel {
         }
 
         try {
-            reservaService.eliminarReserva(
-                    reservaSelecionadaId
-            );
+            reservaService.eliminarReserva(reservaSelecionadaId);
 
-            showInfo("Reserva eliminada com sucesso.");
+            showInfo("Reserva removida com sucesso.");
 
             limparFormulario();
             refreshData();
@@ -300,41 +294,63 @@ public class ReservaPanel extends JPanel {
     }
 
     private void carregarReservaSelecionada() {
-        Reserva reserva =
-                reservasList.getSelectedValue();
+        int selectedRow = reservasTable.getSelectedRow();
+
+        if (selectedRow == -1) {
+            return;
+        }
+
+        int modelRow =
+                reservasTable.convertRowIndexToModel(selectedRow);
+
+        reservaSelecionadaId =
+                (Long) reservasTableModel.getValueAt(modelRow, 0);
+
+        Reserva reserva = encontrarReservaPorId(reservaSelecionadaId);
 
         if (reserva == null) {
             return;
         }
 
-        reservaSelecionadaId =
-                reserva.getId();
+        selecionarClientePorId(reserva.getCliente().getId());
+        selecionarKartPorId(reserva.getKart().getId());
 
-        clienteCombo.setSelectedItem(
-                reserva.getCliente()
-        );
+        pistaField.setText(reserva.getPistaNome());
+        inicioField.setText(reserva.getDataHoraInicio().format(DATE_TIME_FORMAT));
+        fimField.setText(reserva.getDataHoraFim().format(DATE_TIME_FORMAT));
+        estadoCombo.setSelectedItem(reserva.getEstado());
+    }
 
-        kartCombo.setSelectedItem(
-                reserva.getKart()
-        );
+    private Reserva encontrarReservaPorId(Long id) {
+        for (Reserva reserva : reservaService.listarReservas()) {
+            if (reserva.getId().equals(id)) {
+                return reserva;
+            }
+        }
 
-        pistaField.setText(
-                reserva.getPistaNome()
-        );
+        return null;
+    }
 
-        inicioField.setText(
-                reserva.getDataHoraInicio()
-                        .format(DATE_TIME_FORMAT)
-        );
+    private void selecionarClientePorId(Long id) {
+        for (int i = 0; i < clienteCombo.getItemCount(); i++) {
+            Cliente cliente = clienteCombo.getItemAt(i);
 
-        fimField.setText(
-                reserva.getDataHoraFim()
-                        .format(DATE_TIME_FORMAT)
-        );
+            if (cliente.getId().equals(id)) {
+                clienteCombo.setSelectedItem(cliente);
+                return;
+            }
+        }
+    }
 
-        estadoCombo.setSelectedItem(
-                reserva.getEstado()
-        );
+    private void selecionarKartPorId(Long id) {
+        for (int i = 0; i < kartCombo.getItemCount(); i++) {
+            Kart kart = kartCombo.getItemAt(i);
+
+            if (kart.getId().equals(id)) {
+                kartCombo.setSelectedItem(kart);
+                return;
+            }
+        }
     }
 
     private void limparFormulario() {
@@ -353,7 +369,7 @@ public class ReservaPanel extends JPanel {
         fimField.setText("2030-01-01 10:30");
         estadoCombo.setSelectedItem(ReservaEstado.PENDENTE);
 
-        reservasList.clearSelection();
+        reservasTable.clearSelection();
     }
 
     public void refreshData() {
@@ -363,33 +379,46 @@ public class ReservaPanel extends JPanel {
     }
 
     private void refreshClientes() {
-        clienteComboModel.removeAllElements();
+        clienteCombo.removeAllItems();
 
         for (Cliente cliente : clienteService.listarClientes()) {
-            clienteComboModel.addElement(cliente);
+            clienteCombo.addItem(cliente);
         }
     }
 
     private void refreshKarts() {
-        kartComboModel.removeAllElements();
+        kartCombo.removeAllItems();
 
         for (Kart kart : kartService.listarKarts()) {
-            kartComboModel.addElement(kart);
+            kartCombo.addItem(kart);
         }
     }
 
     private void refreshReservas() {
-        reservasModel.clear();
+        reservasTableModel.setRowCount(0);
 
         for (Reserva reserva : reservaService.listarReservas()) {
-            reservasModel.addElement(reserva);
+            reservasTableModel.addRow(
+                    new Object[]{
+                            reserva.getId(),
+                            reserva.getCliente() != null
+                                    ? reserva.getCliente().getNome()
+                                    : "",
+                            reserva.getKart() != null
+                                    ? "Kart #" + reserva.getKart().getNumero()
+                                    : "",
+                            reserva.getPistaNome(),
+                            reserva.getDataHoraInicio().format(DATE_TIME_FORMAT),
+                            reserva.getDataHoraFim().format(DATE_TIME_FORMAT),
+                            reserva.getEstado()
+                    }
+            );
         }
     }
 
     private void configureComboRenderers() {
         clienteCombo.setRenderer(
                 new DefaultListCellRenderer() {
-
                     @Override
                     public Component getListCellRendererComponent(
                             JList<?> list,
@@ -398,15 +427,15 @@ public class ReservaPanel extends JPanel {
                             boolean isSelected,
                             boolean cellHasFocus) {
 
-                        String texto = "";
+                        String text = "";
 
                         if (value instanceof Cliente cliente) {
-                            texto = cliente.getNome();
+                            text = cliente.getNome();
                         }
 
                         return super.getListCellRendererComponent(
                                 list,
-                                texto,
+                                text,
                                 index,
                                 isSelected,
                                 cellHasFocus
@@ -417,7 +446,6 @@ public class ReservaPanel extends JPanel {
 
         kartCombo.setRenderer(
                 new DefaultListCellRenderer() {
-
                     @Override
                     public Component getListCellRendererComponent(
                             JList<?> list,
@@ -426,15 +454,15 @@ public class ReservaPanel extends JPanel {
                             boolean isSelected,
                             boolean cellHasFocus) {
 
-                        String texto = "";
+                        String text = "";
 
                         if (value instanceof Kart kart) {
-                            texto = "Kart #" + kart.getNumero();
+                            text = "Kart #" + kart.getNumero();
                         }
 
                         return super.getListCellRendererComponent(
                                 list,
-                                texto,
+                                text,
                                 index,
                                 isSelected,
                                 cellHasFocus
@@ -444,29 +472,63 @@ public class ReservaPanel extends JPanel {
         );
     }
 
-    private void configureReservaRenderer() {
-        reservasList.setCellRenderer(
-                (list, value, index, isSelected, cellHasFocus) -> {
+    private JPanel createCard(Component component) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(CARD_COLOR);
 
-                    String text =
-                            "Reserva #" + value.getId()
-                                    + " | Cliente: " + value.getCliente().getNome()
-                                    + " | Kart #" + value.getKart().getNumero()
-                                    + " | Pista: " + value.getPistaNome()
-                                    + " | " + value.getDataHoraInicio().format(DATE_TIME_FORMAT)
-                                    + " -> " + value.getDataHoraFim().format(DATE_TIME_FORMAT)
-                                    + " | " + value.getEstado();
-
-                    return new DefaultListCellRenderer()
-                            .getListCellRendererComponent(
-                                    list,
-                                    text,
-                                    index,
-                                    isSelected,
-                                    cellHasFocus
-                            );
-                }
+        card.setBorder(
+                new CompoundBorder(
+                        BorderFactory.createLineBorder(BORDER_COLOR, 1),
+                        BorderFactory.createEmptyBorder(14, 14, 14, 14)
+                )
         );
+
+        card.add(component, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private JButton createActionButton(String text, Color background) {
+        JButton button = new JButton(text);
+
+        button.setBackground(background);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+
+        button.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(background.darker()),
+                        BorderFactory.createEmptyBorder(7, 14, 7, 14)
+                )
+        );
+
+        return button;
+    }
+
+    private void addFormRow(
+            JPanel panel,
+            GridBagConstraints gbc,
+            int row,
+            String label,
+            Component component) {
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+        gbc.gridwidth = 1;
+
+        JLabel labelComponent = new JLabel(label);
+        labelComponent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        panel.add(labelComponent, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = row;
+        gbc.weightx = 1;
+        gbc.gridwidth = 1;
+
+        component.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        panel.add(component, gbc);
     }
 
     private void showInfo(String message) {

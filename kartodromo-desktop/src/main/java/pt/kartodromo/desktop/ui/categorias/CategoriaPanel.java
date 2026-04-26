@@ -1,7 +1,13 @@
 package pt.kartodromo.desktop.ui.categorias;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.math.BigDecimal;
 
 import javax.swing.BorderFactory;
@@ -13,6 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableModel;
 
 import pt.kartodromo.core.bll.CategoriaKartService;
@@ -20,25 +27,24 @@ import pt.kartodromo.core.model.CategoriaKart;
 
 public class CategoriaPanel extends JPanel {
 
-    private final CategoriaKartService categoriaService =
-            new CategoriaKartService();
+    private static final Color BACKGROUND_COLOR = new Color(245, 247, 250);
+    private static final Color CARD_COLOR = Color.WHITE;
+    private static final Color BORDER_COLOR = new Color(215, 220, 225);
+    private static final Color PRIMARY_BLUE = new Color(33, 150, 243);
+    private static final Color CREATE_GREEN = new Color(46, 125, 50);
+    private static final Color UPDATE_BLUE = new Color(21, 101, 192);
+    private static final Color DELETE_RED = new Color(198, 40, 40);
+    private static final Color CLEAR_GRAY = new Color(97, 97, 97);
+
+    private final CategoriaKartService categoriaService = new CategoriaKartService();
 
     private Long categoriaSelecionadaId = null;
 
-    private final JTextField cilindradaField =
-            new JTextField("270");
-
-    private final JTextField descricaoField =
-            new JTextField();
-
-    private final JTextField idadeMinimaField =
-            new JTextField("12");
-
-    private final JTextField experienciaMinimaField =
-            new JTextField("0");
-
-    private final JTextField precoBaseField =
-            new JTextField("25.00");
+    private final JTextField cilindradaField = new JTextField("270");
+    private final JTextField descricaoField = new JTextField();
+    private final JTextField idadeMinimaField = new JTextField("12");
+    private final JTextField experienciaMinimaField = new JTextField("0");
+    private final JTextField precoBaseField = new JTextField("25.00");
 
     private final DefaultTableModel categoriasTableModel =
             new DefaultTableModel(
@@ -53,267 +59,159 @@ public class CategoriaPanel extends JPanel {
                     0
             ) {
                 @Override
-                public boolean isCellEditable(
-                        int row,
-                        int column) {
+                public boolean isCellEditable(int row, int column) {
                     return false;
                 }
             };
 
-    private final JTable categoriasTable =
-            new JTable(categoriasTableModel);
+    private final JTable categoriasTable = new JTable(categoriasTableModel);
 
     public CategoriaPanel() {
+        setLayout(new BorderLayout(20, 20));
+        setBackground(BACKGROUND_COLOR);
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        setLayout(
-                new BorderLayout(12, 12)
-        );
-
-        setBorder(
-                BorderFactory.createEmptyBorder(
-                        12, 12, 12, 12
-                )
-        );
-
-        add(
-                buildForm(),
-                BorderLayout.NORTH
-        );
-
-        add(
-                buildTable(),
-                BorderLayout.CENTER
-        );
+        add(createCard(buildForm()), BorderLayout.NORTH);
+        add(createCard(buildTable()), BorderLayout.CENTER);
 
         refreshData();
     }
 
     private JPanel buildForm() {
-
         JButton criarButton =
-                new JButton("Criar categoria");
+                createActionButton("＋ Nova", CREATE_GREEN);
 
         JButton atualizarButton =
-                new JButton("Atualizar categoria");
+                createActionButton("✎ Atualizar", UPDATE_BLUE);
 
         JButton removerButton =
-                new JButton("Remover categoria");
+                createActionButton("🗑 Remover", DELETE_RED);
 
         JButton limparButton =
-                new JButton("Limpar seleção");
+                createActionButton("↺ Limpar", CLEAR_GRAY);
 
-        criarButton.addActionListener(
-                e -> criarCategoria()
+        criarButton.addActionListener(e -> criarCategoria());
+        atualizarButton.addActionListener(e -> atualizarCategoria());
+        removerButton.addActionListener(e -> removerCategoria());
+        limparButton.addActionListener(e -> limparFormulario());
+
+        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        fieldsPanel.setBackground(CARD_COLOR);
+        fieldsPanel.setBorder(
+                BorderFactory.createTitledBorder("🏷 Dados da Categoria")
         );
 
-        atualizarButton.addActionListener(
-                e -> atualizarCategoria()
-        );
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(7, 8, 7, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
 
-        removerButton.addActionListener(
-                e -> removerCategoria()
-        );
+        addFormRow(fieldsPanel, gbc, 0, "Cilindrada", cilindradaField);
+        addFormRow(fieldsPanel, gbc, 1, "Descrição", descricaoField);
+        addFormRow(fieldsPanel, gbc, 2, "Idade mínima", idadeMinimaField);
+        addFormRow(fieldsPanel, gbc, 3, "Experiência mínima (0-5)", experienciaMinimaField);
+        addFormRow(fieldsPanel, gbc, 4, "Preço base", precoBaseField);
 
-        limparButton.addActionListener(
-                e -> limparFormulario()
-        );
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        actionsPanel.setBackground(CARD_COLOR);
 
-        JPanel form =
-                new JPanel(
-                        new GridLayout(
-                                7,
-                                2,
-                                8,
-                                8
-                        )
-                );
+        actionsPanel.add(criarButton);
+        actionsPanel.add(atualizarButton);
+        actionsPanel.add(removerButton);
+        actionsPanel.add(limparButton);
 
-        form.setBorder(
-                BorderFactory.createTitledBorder(
-                        "Gestão de categoria"
-                )
-        );
-
-        form.add(new JLabel("Cilindrada"));
-        form.add(cilindradaField);
-
-        form.add(new JLabel("Descrição"));
-        form.add(descricaoField);
-
-        form.add(new JLabel("Idade mínima"));
-        form.add(idadeMinimaField);
-
-        form.add(new JLabel("Experiência mínima (0-5)"));
-        form.add(experienciaMinimaField);
-
-        form.add(new JLabel("Preço base"));
-        form.add(precoBaseField);
-
-        form.add(criarButton);
-        form.add(atualizarButton);
-
-        form.add(removerButton);
-        form.add(limparButton);
+        JPanel form = new JPanel(new BorderLayout(10, 10));
+        form.setBackground(CARD_COLOR);
+        form.add(fieldsPanel, BorderLayout.CENTER);
+        form.add(actionsPanel, BorderLayout.SOUTH);
 
         return form;
     }
 
     private JScrollPane buildTable() {
+        categoriasTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        categoriasTable.setAutoCreateRowSorter(true);
+        categoriasTable.setRowHeight(32);
+        categoriasTable.setFillsViewportHeight(true);
+        categoriasTable.setGridColor(new Color(230, 230, 230));
+        categoriasTable.setSelectionBackground(new Color(66, 133, 244));
+        categoriasTable.setSelectionForeground(Color.WHITE);
 
-        categoriasTable.setSelectionMode(
-                ListSelectionModel.SINGLE_SELECTION
+        categoriasTable.getTableHeader().setReorderingAllowed(false);
+        categoriasTable.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 14)
         );
-
-        categoriasTable.setAutoCreateRowSorter(
-                true
-        );
+        categoriasTable.getTableHeader().setBackground(PRIMARY_BLUE);
+        categoriasTable.getTableHeader().setForeground(Color.WHITE);
 
         categoriasTable
                 .getSelectionModel()
                 .addListSelectionListener(e -> {
-
                     if (!e.getValueIsAdjusting()) {
                         carregarCategoriaSelecionada();
                     }
-
                 });
 
-        JScrollPane scroll =
-                new JScrollPane(
-                        categoriasTable
-                );
-
-        scroll.setBorder(
-                BorderFactory.createTitledBorder(
-                        "Categorias"
-                )
-        );
+        JScrollPane scroll = new JScrollPane(categoriasTable);
+        scroll.setBorder(BorderFactory.createTitledBorder("Categorias"));
 
         return scroll;
     }
 
     private void criarCategoria() {
-
         try {
-
             CategoriaKart categoria =
                     categoriaService.criarCategoria(
-                            Integer.parseInt(
-                                    cilindradaField
-                                            .getText()
-                                            .trim()
-                            ),
-                            descricaoField
-                                    .getText()
-                                    .trim(),
-                            Integer.parseInt(
-                                    idadeMinimaField
-                                            .getText()
-                                            .trim()
-                            ),
-                            Integer.parseInt(
-                                    experienciaMinimaField
-                                            .getText()
-                                            .trim()
-                            ),
-                            new BigDecimal(
-                                    precoBaseField
-                                            .getText()
-                                            .trim()
-                            )
+                            Integer.parseInt(cilindradaField.getText().trim()),
+                            descricaoField.getText().trim(),
+                            Integer.parseInt(idadeMinimaField.getText().trim()),
+                            Integer.parseInt(experienciaMinimaField.getText().trim()),
+                            new BigDecimal(precoBaseField.getText().trim())
                     );
 
-            showInfo(
-                    "Categoria criada com sucesso: "
-                            + categoria.getId()
-            );
+            showInfo("Categoria criada com sucesso: " + categoria.getId());
 
             limparFormulario();
             refreshData();
 
         } catch (NumberFormatException ex) {
-
-            showError(
-                    "Verifique os campos numéricos da categoria."
-            );
-
+            showError("Verifique os campos numéricos da categoria.");
         } catch (RuntimeException ex) {
-
-            showError(
-                    ex.getMessage()
-            );
+            showError(ex.getMessage());
         }
     }
 
     private void atualizarCategoria() {
-
         if (categoriaSelecionadaId == null) {
-
-            showError(
-                    "Selecione uma categoria na tabela para atualizar."
-            );
-
+            showError("Selecione uma categoria.");
             return;
         }
 
         try {
-
             categoriaService.atualizarCategoria(
                     categoriaSelecionadaId,
-                    Integer.parseInt(
-                            cilindradaField
-                                    .getText()
-                                    .trim()
-                    ),
-                    descricaoField
-                            .getText()
-                            .trim(),
-                    Integer.parseInt(
-                            idadeMinimaField
-                                    .getText()
-                                    .trim()
-                    ),
-                    Integer.parseInt(
-                            experienciaMinimaField
-                                    .getText()
-                                    .trim()
-                    ),
-                    new BigDecimal(
-                            precoBaseField
-                                    .getText()
-                                    .trim()
-                    )
+                    Integer.parseInt(cilindradaField.getText().trim()),
+                    descricaoField.getText().trim(),
+                    Integer.parseInt(idadeMinimaField.getText().trim()),
+                    Integer.parseInt(experienciaMinimaField.getText().trim()),
+                    new BigDecimal(precoBaseField.getText().trim())
             );
 
-            showInfo(
-                    "Categoria atualizada com sucesso."
-            );
+            showInfo("Categoria atualizada com sucesso.");
 
             limparFormulario();
             refreshData();
 
         } catch (NumberFormatException ex) {
-
-            showError(
-                    "Verifique os campos numéricos da categoria."
-            );
-
+            showError("Verifique os campos numéricos da categoria.");
         } catch (RuntimeException ex) {
-
-            showError(
-                    ex.getMessage()
-            );
+            showError(ex.getMessage());
         }
     }
 
     private void removerCategoria() {
-
         if (categoriaSelecionadaId == null) {
-
-            showError(
-                    "Selecione uma categoria na tabela para remover."
-            );
-
+            showError("Selecione uma categoria para remover.");
             return;
         }
 
@@ -331,96 +229,53 @@ public class CategoriaPanel extends JPanel {
         }
 
         try {
+            categoriaService.removerCategoria(categoriaSelecionadaId);
 
-            categoriaService.removerCategoria(
-                    categoriaSelecionadaId
-            );
-
-            showInfo(
-                    "Categoria removida com sucesso."
-            );
+            showInfo("Categoria removida com sucesso.");
 
             limparFormulario();
             refreshData();
 
         } catch (RuntimeException ex) {
-
-            showError(
-                    ex.getMessage()
-            );
+            showError(ex.getMessage());
         }
     }
 
     private void carregarCategoriaSelecionada() {
-
-        int selectedRow =
-                categoriasTable.getSelectedRow();
+        int selectedRow = categoriasTable.getSelectedRow();
 
         if (selectedRow == -1) {
             return;
         }
 
         int modelRow =
-                categoriasTable
-                        .convertRowIndexToModel(
-                                selectedRow
-                        );
+                categoriasTable.convertRowIndexToModel(selectedRow);
 
         categoriaSelecionadaId =
-                (Long) categoriasTableModel
-                        .getValueAt(
-                                modelRow,
-                                0
-                        );
+                (Long) categoriasTableModel.getValueAt(modelRow, 0);
 
         cilindradaField.setText(
-                categoriasTableModel
-                        .getValueAt(
-                                modelRow,
-                                1
-                        )
-                        .toString()
+                categoriasTableModel.getValueAt(modelRow, 1).toString()
         );
 
         descricaoField.setText(
-                categoriasTableModel
-                        .getValueAt(
-                                modelRow,
-                                2
-                        )
-                        .toString()
+                categoriasTableModel.getValueAt(modelRow, 2).toString()
         );
 
         idadeMinimaField.setText(
-                categoriasTableModel
-                        .getValueAt(
-                                modelRow,
-                                3
-                        )
-                        .toString()
+                categoriasTableModel.getValueAt(modelRow, 3).toString()
         );
 
         experienciaMinimaField.setText(
-                categoriasTableModel
-                        .getValueAt(
-                                modelRow,
-                                4
-                        )
-                        .toString()
+                categoriasTableModel.getValueAt(modelRow, 4).toString()
         );
 
         precoBaseField.setText(
-                categoriasTableModel
-                        .getValueAt(
-                                modelRow,
-                                5
-                        )
-                        .toString()
+                categoriasTableModel.getValueAt(modelRow, 5).toString()
         );
     }
 
     private void limparFormulario() {
-
         categoriaSelecionadaId = null;
 
         cilindradaField.setText("270");
@@ -433,16 +288,9 @@ public class CategoriaPanel extends JPanel {
     }
 
     public void refreshData() {
+        categoriasTableModel.setRowCount(0);
 
-        categoriasTableModel.setRowCount(
-                0
-        );
-
-        for (
-                CategoriaKart categoria :
-                categoriaService.listarCategorias()
-        ) {
-
+        for (CategoriaKart categoria : categoriaService.listarCategorias()) {
             categoriasTableModel.addRow(
                     new Object[]{
                             categoria.getId(),
@@ -456,8 +304,66 @@ public class CategoriaPanel extends JPanel {
         }
     }
 
-    private void showInfo(String message) {
+    private JPanel createCard(Component component) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(CARD_COLOR);
 
+        card.setBorder(
+                new CompoundBorder(
+                        BorderFactory.createLineBorder(BORDER_COLOR, 1),
+                        BorderFactory.createEmptyBorder(14, 14, 14, 14)
+                )
+        );
+
+        card.add(component, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private JButton createActionButton(String text, Color background) {
+        JButton button = new JButton(text);
+
+        button.setBackground(background);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+
+        button.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(background.darker()),
+                        BorderFactory.createEmptyBorder(7, 14, 7, 14)
+                )
+        );
+
+        return button;
+    }
+
+    private void addFormRow(
+            JPanel panel,
+            GridBagConstraints gbc,
+            int row,
+            String label,
+            Component component) {
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+        gbc.gridwidth = 1;
+
+        JLabel labelComponent = new JLabel(label);
+        labelComponent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        panel.add(labelComponent, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = row;
+        gbc.weightx = 1;
+        gbc.gridwidth = 1;
+
+        component.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        panel.add(component, gbc);
+    }
+
+    private void showInfo(String message) {
         JOptionPane.showMessageDialog(
                 this,
                 message,
@@ -467,7 +373,6 @@ public class CategoriaPanel extends JPanel {
     }
 
     private void showError(String message) {
-
         JOptionPane.showMessageDialog(
                 this,
                 message,
