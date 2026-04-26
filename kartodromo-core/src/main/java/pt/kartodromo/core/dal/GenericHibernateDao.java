@@ -22,11 +22,9 @@ public abstract class GenericHibernateDao<T> {
     }
 
     public T save(T entity) {
-
         Transaction tx = null;
 
         try (Session session = getSessionFactory().openSession()) {
-
             tx = session.beginTransaction();
 
             session.persist(entity);
@@ -36,7 +34,6 @@ public abstract class GenericHibernateDao<T> {
             return entity;
 
         } catch (Exception e) {
-
             if (tx != null) {
                 tx.rollback();
             }
@@ -46,21 +43,18 @@ public abstract class GenericHibernateDao<T> {
     }
 
     public T update(T entity) {
-
         Transaction tx = null;
 
         try (Session session = getSessionFactory().openSession()) {
-
             tx = session.beginTransaction();
 
-            T merged = (T) session.merge(entity);
+            T mergedEntity = session.merge(entity);
 
             tx.commit();
 
-            return merged;
+            return mergedEntity;
 
         } catch (Exception e) {
-
             if (tx != null) {
                 tx.rollback();
             }
@@ -70,23 +64,20 @@ public abstract class GenericHibernateDao<T> {
     }
 
     public void delete(T entity) {
-
         Transaction tx = null;
 
         try (Session session = getSessionFactory().openSession()) {
-
             tx = session.beginTransaction();
 
-            session.remove(
-                session.contains(entity)
+            T managedEntity = session.contains(entity)
                     ? entity
-                    : session.merge(entity)
-            );
+                    : session.merge(entity);
+
+            session.remove(managedEntity);
 
             tx.commit();
 
         } catch (Exception e) {
-
             if (tx != null) {
                 tx.rollback();
             }
@@ -95,10 +86,31 @@ public abstract class GenericHibernateDao<T> {
         }
     }
 
-    public Optional<T> findById(Long id) {
+    public void deleteById(Long id) {
+        Transaction tx = null;
 
         try (Session session = getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
 
+            T entity = session.get(entityClass, id);
+
+            if (entity != null) {
+                session.remove(entity);
+            }
+
+            tx.commit();
+
+        } catch (Exception e) {
+            if (tx != null) {
+                tx.rollback();
+            }
+
+            throw new RuntimeException("Erro ao remover entidade por ID.", e);
+        }
+    }
+
+    public Optional<T> findById(Long id) {
+        try (Session session = getSessionFactory().openSession()) {
             return Optional.ofNullable(
                     session.get(entityClass, id)
             );
@@ -106,9 +118,7 @@ public abstract class GenericHibernateDao<T> {
     }
 
     public List<T> findAll() {
-
         try (Session session = getSessionFactory().openSession()) {
-
             return session.createQuery(
                     "from " + entityClass.getSimpleName(),
                     entityClass

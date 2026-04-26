@@ -1,5 +1,6 @@
 package pt.kartodromo.core.dal;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.hibernate.Session;
 import pt.kartodromo.core.model.Reserva;
@@ -11,63 +12,70 @@ public class ReservaDao extends GenericHibernateDao<Reserva> {
         super(Reserva.class);
     }
 
-    public long countReservasAtivasByCorridaId(Long corridaId) {
+    public List<Reserva> findAllWithDetails() {
         try (Session session = getSessionFactory().openSession()) {
-            Long total = session.createQuery(
-                    "select count(r.id) from Reserva r where r.corrida.id = :corridaId and r.estado = :estado",
-                    Long.class
+            return session.createQuery(
+                    "select r from Reserva r "
+                    + "join fetch r.cliente "
+                    + "join fetch r.kart "
+                    + "order by r.dataHoraInicio, r.id",
+                    Reserva.class
             )
-                    .setParameter("corridaId", corridaId)
-                    .setParameter("estado", ReservaEstado.ATIVA)
-                    .uniqueResult();
-
-            return total == null ? 0L : total;
+                    .getResultList();
         }
     }
 
-    public boolean existsReservaAtiva(Long clienteId, Long corridaId) {
+    public boolean existsOverlappingByKart(
+            Long kartId,
+            LocalDateTime dataHoraInicio,
+            LocalDateTime dataHoraFim,
+            Long reservaIgnorarId
+    ) {
         try (Session session = getSessionFactory().openSession()) {
             Long total = session.createQuery(
-                    "select count(r.id) from Reserva r where r.cliente.id = :clienteId and r.corrida.id = :corridaId and r.estado = :estado",
+                    "select count(r.id) from Reserva r "
+                    + "where r.kart.id = :kartId "
+                    + "and r.estado <> :estadoCancelada "
+                    + "and r.dataHoraInicio < :dataHoraFim "
+                    + "and r.dataHoraFim > :dataHoraInicio "
+                    + "and (:reservaIgnorarId is null or r.id <> :reservaIgnorarId)",
                     Long.class
             )
-                    .setParameter("clienteId", clienteId)
-                    .setParameter("corridaId", corridaId)
-                    .setParameter("estado", ReservaEstado.ATIVA)
+                    .setParameter("kartId", kartId)
+                    .setParameter("estadoCancelada", ReservaEstado.CANCELADA)
+                    .setParameter("dataHoraInicio", dataHoraInicio)
+                    .setParameter("dataHoraFim", dataHoraFim)
+                    .setParameter("reservaIgnorarId", reservaIgnorarId)
                     .uniqueResult();
 
             return total != null && total > 0;
         }
     }
 
-    public List<Reserva> findAtivasByClienteId(Long clienteId) {
+    public boolean existsOverlappingByPista(
+            String pistaNomeNormalizado,
+            LocalDateTime dataHoraInicio,
+            LocalDateTime dataHoraFim,
+            Long reservaIgnorarId
+    ) {
         try (Session session = getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "select r from Reserva r "
-                    + "join fetch r.cliente "
-                    + "join fetch r.corrida "
-                    + "where r.cliente.id = :clienteId and r.estado = :estado "
-                    + "order by r.dataReserva desc",
-                    Reserva.class
+            Long total = session.createQuery(
+                    "select count(r.id) from Reserva r "
+                    + "where lower(r.pistaNome) = :pistaNome "
+                    + "and r.estado <> :estadoCancelada "
+                    + "and r.dataHoraInicio < :dataHoraFim "
+                    + "and r.dataHoraFim > :dataHoraInicio "
+                    + "and (:reservaIgnorarId is null or r.id <> :reservaIgnorarId)",
+                    Long.class
             )
-                    .setParameter("clienteId", clienteId)
-                    .setParameter("estado", ReservaEstado.ATIVA)
-                    .getResultList();
-        }
-    }
+                    .setParameter("pistaNome", pistaNomeNormalizado)
+                    .setParameter("estadoCancelada", ReservaEstado.CANCELADA)
+                    .setParameter("dataHoraInicio", dataHoraInicio)
+                    .setParameter("dataHoraFim", dataHoraFim)
+                    .setParameter("reservaIgnorarId", reservaIgnorarId)
+                    .uniqueResult();
 
-    public List<Reserva> findByCorridaId(Long corridaId) {
-        try (Session session = getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "select r from Reserva r "
-                    + "join fetch r.cliente "
-                    + "join fetch r.corrida "
-                    + "where r.corrida.id = :corridaId "
-                    + "order by r.dataReserva",
-                    Reserva.class
-            )
-                    .setParameter("corridaId", corridaId)
-                    .getResultList();
+            return total != null && total > 0;
         }
     }
 }

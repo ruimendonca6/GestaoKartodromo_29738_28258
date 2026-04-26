@@ -1,6 +1,7 @@
 package pt.kartodromo.desktop.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -26,7 +27,7 @@ public class KartodromoDesktopFrame extends JFrame {
         setTitle("🏁 Kartódromo - Desktop");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1300, 800);
-        setMinimumSize(new java.awt.Dimension(1000, 650));
+        setMinimumSize(new Dimension(1000, 650));
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
