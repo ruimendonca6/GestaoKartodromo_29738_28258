@@ -26,7 +26,7 @@ import pt.kartodromo.core.bll.ReservaService;
 public class DashboardPanel extends JPanel {
 
     private static final String BACKGROUND_IMAGE_PATH =
-            "/images/dashboardimage1.png";
+            "/images/dashboardimage2.png";
 
     private static final Color TEXT_COLOR =
             new Color(33, 33, 33);
