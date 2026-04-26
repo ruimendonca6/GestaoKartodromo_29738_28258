@@ -1,16 +1,21 @@
 package pt.kartodromo.desktop.ui;
 
 import java.awt.BorderLayout;
+
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+import javax.swing.WindowConstants;
+
 import pt.kartodromo.desktop.ui.categorias.CategoriaPanel;
 import pt.kartodromo.desktop.ui.clientes.ClientePanel;
 import pt.kartodromo.desktop.ui.corridas.CorridaPanel;
+import pt.kartodromo.desktop.ui.dashboard.DashboardPanel;
 import pt.kartodromo.desktop.ui.karts.KartPanel;
 import pt.kartodromo.desktop.ui.reservas.ReservaPanel;
 
 public class KartodromoDesktopFrame extends JFrame {
 
+    private final DashboardPanel dashboardPanel;
     private final ClientePanel clientePanel;
     private final CategoriaPanel categoriaPanel;
     private final KartPanel kartPanel;
@@ -18,12 +23,14 @@ public class KartodromoDesktopFrame extends JFrame {
     private final ReservaPanel reservaPanel;
 
     public KartodromoDesktopFrame() {
-        setTitle("Kartodromo - Desktop");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1100, 700);
+        setTitle("🏁 Kartódromo - Desktop");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setSize(1300, 800);
+        setMinimumSize(new java.awt.Dimension(1000, 650));
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
+        dashboardPanel = new DashboardPanel();
         clientePanel = new ClientePanel();
         categoriaPanel = new CategoriaPanel();
         kartPanel = new KartPanel();
@@ -32,11 +39,12 @@ public class KartodromoDesktopFrame extends JFrame {
 
         JTabbedPane tabs = new JTabbedPane();
 
-        tabs.addTab("Clientes", clientePanel);
-        tabs.addTab("Categorias", categoriaPanel);
-        tabs.addTab("Karts", kartPanel);
-        tabs.addTab("Corridas", corridaPanel);
-        tabs.addTab("Reservas", reservaPanel);
+        tabs.addTab(UiLabels.DASHBOARD, dashboardPanel);
+        tabs.addTab(UiLabels.CLIENTES, clientePanel);
+        tabs.addTab(UiLabels.CATEGORIAS, categoriaPanel);
+        tabs.addTab(UiLabels.KARTS, kartPanel);
+        tabs.addTab(UiLabels.CORRIDAS, corridaPanel);
+        tabs.addTab(UiLabels.RESERVAS, reservaPanel);
 
         tabs.addChangeListener(e -> refreshAllPanels());
 
@@ -44,6 +52,7 @@ public class KartodromoDesktopFrame extends JFrame {
     }
 
     private void refreshAllPanels() {
+        dashboardPanel.refreshData();
         clientePanel.refreshData();
         categoriaPanel.refreshData();
         kartPanel.refreshData();
