@@ -37,4 +37,26 @@ public class CorridaDao extends GenericHibernateDao<Corrida> {
                     .getResultList();
         }
     }
+
+    public List<Corrida> findByClienteId(Long clienteId) {
+        try (Session session = getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "from Corrida c where c.cliente.id = :clienteId order by c.dataHoraInicio",
+                    Corrida.class
+            )
+                    .setParameter("clienteId", clienteId)
+                    .getResultList();
+        }
+    }
+
+    public List<Corrida> findByLayoutNome(String layoutNome) {
+        try (Session session = getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "from Corrida c where lower(c.layoutNome) = :layoutNome order by c.dataHoraInicio",
+                    Corrida.class
+            )
+                    .setParameter("layoutNome", layoutNome.toLowerCase())
+                    .getResultList();
+        }
+    }
 }

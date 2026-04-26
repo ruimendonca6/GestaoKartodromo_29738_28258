@@ -78,6 +78,7 @@ public class CoreDemoApplication {
                     20,
                     1,
                     categoria.getId(),
+                    ana.getId(),
                     "Pista Completa"
             );
 

@@ -33,18 +33,29 @@ public class Corrida {
     private String layoutNome;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "categoria_id", nullable = false)
     private CategoriaKart categoria;
 
     public Corrida() {
     }
 
-    public Corrida(LocalDateTime dataHoraInicio, Integer duracaoMinutos,
-            Integer vagasMaximas, String layoutNome, CategoriaKart categoria) {
+    public Corrida(
+            LocalDateTime dataHoraInicio,
+            Integer duracaoMinutos,
+            Integer vagasMaximas,
+            String layoutNome,
+            Cliente cliente,
+            CategoriaKart categoria
+    ) {
         this.dataHoraInicio = dataHoraInicio;
         this.duracaoMinutos = duracaoMinutos;
         this.vagasMaximas = vagasMaximas;
         this.layoutNome = layoutNome;
+        this.cliente = cliente;
         this.categoria = categoria;
     }
 
@@ -68,6 +79,10 @@ public class Corrida {
         return layoutNome;
     }
 
+    public Cliente getCliente() {
+        return cliente;
+    }
+
     public CategoriaKart getCategoria() {
         return categoria;
     }
@@ -88,8 +103,16 @@ public class Corrida {
         this.layoutNome = layoutNome;
     }
 
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
     public void setCategoria(CategoriaKart categoria) {
         this.categoria = categoria;
+    }
+
+    public LocalDateTime getDataHoraFim() {
+        return dataHoraInicio.plusMinutes(duracaoMinutos);
     }
 
     @Override
@@ -100,6 +123,7 @@ public class Corrida {
                 + ", duracaoMinutos=" + duracaoMinutos
                 + ", vagasMaximas=" + vagasMaximas
                 + ", layoutNome='" + layoutNome + '\''
+                + ", cliente=" + (cliente != null ? cliente.getNome() : "null")
                 + ", categoria=" + (categoria != null ? categoria.getDescricao() : "null")
                 + '}';
     }
