@@ -1,7 +1,7 @@
 package pt.kartodromo.desktop.ui.clientes;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -20,40 +20,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableModel;
 
 import pt.kartodromo.core.bll.ClienteService;
 import pt.kartodromo.core.model.Cliente;
+import pt.kartodromo.desktop.ui.UiStyle;
 
 public class ClientePanel extends JPanel {
 
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    private static final Color BACKGROUND_COLOR =
-            new Color(245, 247, 250);
-
-    private static final Color CARD_COLOR =
-            Color.WHITE;
-
-    private static final Color BORDER_COLOR =
-            new Color(215, 220, 225);
-
-    private static final Color PRIMARY_BLUE =
-            new Color(33, 150, 243);
-
-    private static final Color CREATE_GREEN =
-            new Color(46, 125, 50);
-
-    private static final Color UPDATE_BLUE =
-            new Color(21, 101, 192);
-
-    private static final Color DELETE_RED =
-            new Color(198, 40, 40);
-
-    private static final Color CLEAR_GRAY =
-            new Color(97, 97, 97);
 
     private final ClienteService clienteService =
             new ClienteService();
@@ -94,138 +70,71 @@ public class ClientePanel extends JPanel {
 
     public ClientePanel() {
         setLayout(new BorderLayout(20, 20));
-        setBackground(BACKGROUND_COLOR);
+        setBackground(UiStyle.BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        add(createCard(buildForm()), BorderLayout.NORTH);
-        add(createCard(buildTable()), BorderLayout.CENTER);
+        add(UiStyle.createCard(buildForm()), BorderLayout.NORTH);
+        add(UiStyle.createCard(buildTable()), BorderLayout.CENTER);
 
         refreshData();
     }
 
     private JPanel buildForm() {
         JButton criarButton =
-                createActionButton("＋ Novo", CREATE_GREEN);
+                UiStyle.createActionButton("+ Novo", UiStyle.CREATE_GREEN);
 
         JButton atualizarButton =
-                createActionButton("✎ Atualizar", UPDATE_BLUE);
+                UiStyle.createActionButton("✎ Atualizar", UiStyle.UPDATE_BLUE);
 
         JButton removerButton =
-                createActionButton("🗑 Remover", DELETE_RED);
+                UiStyle.createActionButton("🗑 Remover", UiStyle.DELETE_RED);
 
         JButton limparButton =
-                createActionButton("↺ Limpar", CLEAR_GRAY);
+                UiStyle.createActionButton("↺ Limpar", UiStyle.CLEAR_GRAY);
 
         criarButton.addActionListener(e -> criarCliente());
         atualizarButton.addActionListener(e -> atualizarCliente());
         removerButton.addActionListener(e -> removerCliente());
         limparButton.addActionListener(e -> limparFormulario());
 
-        JPanel fieldsPanel = new JPanel(new GridBagLayout());
-        fieldsPanel.setBackground(CARD_COLOR);
+        JPanel fieldsPanel =
+                new JPanel(new GridBagLayout());
+
+        fieldsPanel.setOpaque(false);
         fieldsPanel.setBorder(
                 BorderFactory.createTitledBorder("👤 Dados do Cliente")
         );
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(7, 8, 7, 8);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
+        GridBagConstraints gbc =
+                createGbc();
 
         addFormRow(fieldsPanel, gbc, 0, "Nome", nomeField);
         addFormRow(fieldsPanel, gbc, 1, "Data nascimento (yyyy-MM-dd)", dataNascimentoField);
         addFormRow(fieldsPanel, gbc, 2, "Email", emailField);
         addFormRow(fieldsPanel, gbc, 3, "Nível experiência (0-5)", nivelField);
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
-        actionsPanel.setBackground(CARD_COLOR);
+        JPanel actionsPanel =
+                new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
 
+        actionsPanel.setOpaque(false);
         actionsPanel.add(criarButton);
         actionsPanel.add(atualizarButton);
         actionsPanel.add(removerButton);
         actionsPanel.add(limparButton);
 
-        JPanel form = new JPanel(new BorderLayout(10, 10));
-        form.setBackground(CARD_COLOR);
+        JPanel form =
+                new JPanel(new BorderLayout(10, 10));
+
+        form.setOpaque(false);
         form.add(fieldsPanel, BorderLayout.CENTER);
         form.add(actionsPanel, BorderLayout.SOUTH);
 
         return form;
     }
 
-    private JPanel createCard(java.awt.Component component) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(CARD_COLOR);
-
-        card.setBorder(
-                new CompoundBorder(
-                        BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                        BorderFactory.createEmptyBorder(14, 14, 14, 14)
-                )
-        );
-
-        card.add(component, BorderLayout.CENTER);
-
-        return card;
-    }
-
-    private JButton createActionButton(String text, Color background) {
-        JButton button = new JButton(text);
-
-        button.setBackground(background);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(background.darker()),
-                        BorderFactory.createEmptyBorder(7, 14, 7, 14)
-                )
-        );
-
-        return button;
-    }
-
-    private void addFormRow(
-            JPanel panel,
-            GridBagConstraints gbc,
-            int row,
-            String label,
-            JTextField field) {
-
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-        gbc.gridwidth = 1;
-
-        JLabel labelComponent = new JLabel(label);
-        labelComponent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
-        panel.add(labelComponent, gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = row;
-        gbc.weightx = 1;
-        gbc.gridwidth = 1;
-
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        panel.add(field, gbc);
-    }
-
     private JScrollPane buildTable() {
         clientesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        clientesTable.setAutoCreateRowSorter(true);
-        clientesTable.setRowHeight(32);
-        clientesTable.setFillsViewportHeight(true);
-        clientesTable.setGridColor(new Color(230, 230, 230));
-        clientesTable.setSelectionBackground(new Color(66, 133, 244));
-        clientesTable.setSelectionForeground(Color.WHITE);
-
-        clientesTable.getTableHeader().setReorderingAllowed(false);
-        clientesTable.getTableHeader().setFont(
-                new Font("Segoe UI", Font.BOLD, 14)
-        );
-        clientesTable.getTableHeader().setBackground(PRIMARY_BLUE);
-        clientesTable.getTableHeader().setForeground(Color.WHITE);
+        UiStyle.styleTable(clientesTable);
 
         clientesTable
                 .getSelectionModel()
@@ -235,7 +144,9 @@ public class ClientePanel extends JPanel {
                     }
                 });
 
-        JScrollPane scroll = new JScrollPane(clientesTable);
+        JScrollPane scroll =
+                new JScrollPane(clientesTable);
+
         scroll.setBorder(BorderFactory.createTitledBorder("Clientes"));
 
         return scroll;
@@ -247,23 +158,14 @@ public class ClientePanel extends JPanel {
                     clienteService.criarCliente(
                             nomeField.getText().trim(),
                             LocalDate.parse(
-                                    dataNascimentoField
-                                            .getText()
-                                            .trim(),
+                                    dataNascimentoField.getText().trim(),
                                     DATE_FORMAT
                             ),
                             emailField.getText().trim(),
-                            Integer.parseInt(
-                                    nivelField
-                                            .getText()
-                                            .trim()
-                            )
+                            Integer.parseInt(nivelField.getText().trim())
                     );
 
-            showInfo(
-                    "Cliente criado com sucesso: "
-                            + cliente.getId()
-            );
+            showInfo("Cliente criado com sucesso: " + cliente.getId());
 
             limparFormulario();
             refreshData();
@@ -288,17 +190,11 @@ public class ClientePanel extends JPanel {
                     clienteSelecionadoId,
                     nomeField.getText().trim(),
                     LocalDate.parse(
-                            dataNascimentoField
-                                    .getText()
-                                    .trim(),
+                            dataNascimentoField.getText().trim(),
                             DATE_FORMAT
                     ),
                     emailField.getText().trim(),
-                    Integer.parseInt(
-                            nivelField
-                                    .getText()
-                                    .trim()
-                    )
+                    Integer.parseInt(nivelField.getText().trim())
             );
 
             showInfo("Cliente atualizado com sucesso.");
@@ -348,7 +244,8 @@ public class ClientePanel extends JPanel {
     }
 
     private void carregarClienteSelecionado() {
-        int selectedRow = clientesTable.getSelectedRow();
+        int selectedRow =
+                clientesTable.getSelectedRow();
 
         if (selectedRow == -1) {
             return;
@@ -402,6 +299,55 @@ public class ClientePanel extends JPanel {
                     }
             );
         }
+    }
+
+    private GridBagConstraints createGbc() {
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.insets =
+                new Insets(7, 8, 7, 8);
+
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        gbc.weightx =
+                1;
+
+        return gbc;
+    }
+
+    private void addFormRow(
+            JPanel panel,
+            GridBagConstraints gbc,
+            int row,
+            String label,
+            Component field) {
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+        gbc.gridwidth = 1;
+
+        JLabel labelComponent =
+                new JLabel(label);
+
+        labelComponent.setFont(
+                new Font("Segoe UI", Font.PLAIN, 13)
+        );
+
+        panel.add(labelComponent, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = row;
+        gbc.weightx = 1;
+        gbc.gridwidth = 1;
+
+        field.setFont(
+                new Font("Segoe UI", Font.PLAIN, 13)
+        );
+
+        panel.add(field, gbc);
     }
 
     private void showInfo(String message) {

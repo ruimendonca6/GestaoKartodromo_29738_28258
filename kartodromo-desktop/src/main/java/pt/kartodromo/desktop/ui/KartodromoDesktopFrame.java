@@ -7,14 +7,20 @@ import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
 
+import pt.kartodromo.desktop.ui.auth.AuthUser;
+import pt.kartodromo.desktop.ui.auth.LoginDialog;
 import pt.kartodromo.desktop.ui.categorias.CategoriaPanel;
 import pt.kartodromo.desktop.ui.clientes.ClientePanel;
 import pt.kartodromo.desktop.ui.corridas.CorridaPanel;
 import pt.kartodromo.desktop.ui.dashboard.DashboardPanel;
 import pt.kartodromo.desktop.ui.karts.KartPanel;
+import pt.kartodromo.desktop.ui.perfil.PerfilPanel;
+import pt.kartodromo.desktop.ui.pistas.PistasPanel;
 import pt.kartodromo.desktop.ui.reservas.ReservaPanel;
 
 public class KartodromoDesktopFrame extends JFrame {
+
+    private final AuthUser authenticatedUser;
 
     private final DashboardPanel dashboardPanel;
     private final ClientePanel clientePanel;
@@ -22,9 +28,19 @@ public class KartodromoDesktopFrame extends JFrame {
     private final KartPanel kartPanel;
     private final CorridaPanel corridaPanel;
     private final ReservaPanel reservaPanel;
+    private final PistasPanel pistasPanel;
+    private final PerfilPanel perfilPanel;
 
-    public KartodromoDesktopFrame() {
-        setTitle("🏁 Kartódromo - Desktop");
+    public KartodromoDesktopFrame(AuthUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+
+        setTitle(
+                "🏁 Kartódromo - Desktop | Utilizador: "
+                        + authenticatedUser.getUsername()
+                        + " | Perfil: "
+                        + authenticatedUser.getRole()
+        );
+
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1300, 800);
         setMinimumSize(new Dimension(1000, 650));
@@ -37,27 +53,90 @@ public class KartodromoDesktopFrame extends JFrame {
         kartPanel = new KartPanel();
         corridaPanel = new CorridaPanel();
         reservaPanel = new ReservaPanel();
+        pistasPanel = new PistasPanel();
+
+        perfilPanel =
+                new PerfilPanel(
+                        authenticatedUser,
+                        this::logout
+                );
 
         JTabbedPane tabs = new JTabbedPane();
 
-        tabs.addTab(UiLabels.DASHBOARD, dashboardPanel);
-        tabs.addTab(UiLabels.CLIENTES, clientePanel);
-        tabs.addTab(UiLabels.CATEGORIAS, categoriaPanel);
-        tabs.addTab(UiLabels.KARTS, kartPanel);
-        tabs.addTab(UiLabels.CORRIDAS, corridaPanel);
-        tabs.addTab(UiLabels.RESERVAS, reservaPanel);
+        configureTabsByRole(tabs);
 
         tabs.addChangeListener(e -> refreshAllPanels());
 
         add(tabs, BorderLayout.CENTER);
     }
 
+    private void configureTabsByRole(JTabbedPane tabs) {
+        tabs.addTab(UiLabels.DASHBOARD, dashboardPanel);
+
+        if (authenticatedUser.isCliente()) {
+            tabs.addTab(UiLabels.PISTAS, pistasPanel);
+            tabs.addTab(UiLabels.RESERVAS, reservaPanel);
+            tabs.addTab(UiLabels.PERFIL, perfilPanel);
+            return;
+        }
+
+        if (authenticatedUser.isFuncionario()) {
+            tabs.addTab(UiLabels.CLIENTES, clientePanel);
+            tabs.addTab(UiLabels.CATEGORIAS, categoriaPanel);
+            tabs.addTab(UiLabels.KARTS, kartPanel);
+            tabs.addTab(UiLabels.CORRIDAS, corridaPanel);
+            tabs.addTab(UiLabels.RESERVAS, reservaPanel);
+            tabs.addTab(UiLabels.PERFIL, perfilPanel);
+            return;
+        }
+
+        if (authenticatedUser.isAdmin()) {
+            tabs.addTab(UiLabels.CLIENTES, clientePanel);
+            tabs.addTab(UiLabels.CATEGORIAS, categoriaPanel);
+            tabs.addTab(UiLabels.KARTS, kartPanel);
+            tabs.addTab(UiLabels.CORRIDAS, corridaPanel);
+            tabs.addTab(UiLabels.RESERVAS, reservaPanel);
+            tabs.addTab(UiLabels.PISTAS, pistasPanel);
+            tabs.addTab(UiLabels.PERFIL, perfilPanel);
+        }
+    }
+
     private void refreshAllPanels() {
         dashboardPanel.refreshData();
-        clientePanel.refreshData();
-        categoriaPanel.refreshData();
-        kartPanel.refreshData();
-        corridaPanel.refreshData();
+
+        if (!authenticatedUser.isCliente()) {
+            clientePanel.refreshData();
+            categoriaPanel.refreshData();
+            kartPanel.refreshData();
+            corridaPanel.refreshData();
+        }
+
         reservaPanel.refreshData();
+        pistasPanel.refreshData();
+        perfilPanel.refreshData();
+    }
+
+    private void logout() {
+        dispose();
+
+        LoginDialog loginDialog =
+                new LoginDialog(null);
+
+        loginDialog.setVisible(true);
+
+        AuthUser newAuthenticatedUser =
+                loginDialog.getAuthenticatedUser();
+
+        if (newAuthenticatedUser == null) {
+            System.exit(0);
+            return;
+        }
+
+        new KartodromoDesktopFrame(newAuthenticatedUser)
+                .setVisible(true);
+    }
+
+    public AuthUser getAuthenticatedUser() {
+        return authenticatedUser;
     }
 }

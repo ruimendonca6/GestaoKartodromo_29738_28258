@@ -11,4 +11,6 @@ public final class UiLabels {
     public static final String KARTS = "🏎 Karts";
     public static final String CORRIDAS = "🏁 Corridas";
     public static final String RESERVAS = "🗃 Reservas";
+    public static final String PISTAS = "🗺 Pistas";
+    public static final String PERFIL = "👤 Perfil";
 }
