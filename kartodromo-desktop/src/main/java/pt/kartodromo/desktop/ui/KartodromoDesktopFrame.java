@@ -17,6 +17,8 @@ import pt.kartodromo.desktop.ui.karts.KartPanel;
 import pt.kartodromo.desktop.ui.perfil.PerfilPanel;
 import pt.kartodromo.desktop.ui.pistas.PistasPanel;
 import pt.kartodromo.desktop.ui.reservas.ReservaPanel;
+import pt.kartodromo.desktop.ui.calendario.CalendarioPanel;
+import pt.kartodromo.desktop.ui.utilizadores.UtilizadoresPanel;
 
 public class KartodromoDesktopFrame extends JFrame {
 
@@ -30,6 +32,8 @@ public class KartodromoDesktopFrame extends JFrame {
     private final ReservaPanel reservaPanel;
     private final PistasPanel pistasPanel;
     private final PerfilPanel perfilPanel;
+    private final UtilizadoresPanel utilizadoresPanel;
+    private final CalendarioPanel calendarioPanel;
 
     public KartodromoDesktopFrame(AuthUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
@@ -54,6 +58,8 @@ public class KartodromoDesktopFrame extends JFrame {
         corridaPanel = new CorridaPanel();
         reservaPanel = new ReservaPanel();
         pistasPanel = new PistasPanel();
+        utilizadoresPanel = new UtilizadoresPanel();
+        calendarioPanel = new CalendarioPanel();
 
         perfilPanel =
                 new PerfilPanel(
@@ -76,6 +82,7 @@ public class KartodromoDesktopFrame extends JFrame {
         if (authenticatedUser.isCliente()) {
             tabs.addTab(UiLabels.PISTAS, pistasPanel);
             tabs.addTab(UiLabels.RESERVAS, reservaPanel);
+            tabs.addTab(UiLabels.CALENDARIO, calendarioPanel);
             tabs.addTab(UiLabels.PERFIL, perfilPanel);
             return;
         }
@@ -86,6 +93,7 @@ public class KartodromoDesktopFrame extends JFrame {
             tabs.addTab(UiLabels.KARTS, kartPanel);
             tabs.addTab(UiLabels.CORRIDAS, corridaPanel);
             tabs.addTab(UiLabels.RESERVAS, reservaPanel);
+            tabs.addTab(UiLabels.CALENDARIO, calendarioPanel);
             tabs.addTab(UiLabels.PERFIL, perfilPanel);
             return;
         }
@@ -97,6 +105,8 @@ public class KartodromoDesktopFrame extends JFrame {
             tabs.addTab(UiLabels.CORRIDAS, corridaPanel);
             tabs.addTab(UiLabels.RESERVAS, reservaPanel);
             tabs.addTab(UiLabels.PISTAS, pistasPanel);
+            tabs.addTab(UiLabels.CALENDARIO, calendarioPanel);
+            tabs.addTab(UiLabels.UTILIZADORES, utilizadoresPanel);
             tabs.addTab(UiLabels.PERFIL, perfilPanel);
         }
     }
@@ -113,7 +123,12 @@ public class KartodromoDesktopFrame extends JFrame {
 
         reservaPanel.refreshData();
         pistasPanel.refreshData();
+        calendarioPanel.refreshData();
         perfilPanel.refreshData();
+
+        if (authenticatedUser.isAdmin()) {
+            utilizadoresPanel.refreshData();
+        }
     }
 
     private void logout() {

@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -58,6 +60,101 @@ public class AuthService {
                         record.role
                 )
         );
+    }
+
+    public List<AuthUser> listarUtilizadores() {
+        Properties users = loadUsers();
+        List<AuthUser> result = new ArrayList<>();
+        for (String username : users.stringPropertyNames()) {
+            UserRecord record = parseUserRecord(users.getProperty(username));
+            result.add(new AuthUser(username, record.email, record.role));
+        }
+        result.sort((a, b) -> a.getUsername().compareTo(b.getUsername()));
+        return result;
+    }
+
+    public void eliminarUtilizador(String username) {
+        String normalized = normalizeUsername(username);
+        if (normalized.equals(DEFAULT_ADMIN_USERNAME)) {
+            throw new IllegalArgumentException("Não é possível eliminar o administrador padrão.");
+        }
+        Properties users = loadUsers();
+        if (!users.containsKey(normalized)) {
+            throw new IllegalArgumentException("Utilizador não encontrado.");
+        }
+        users.remove(normalized);
+        saveUsers(users);
+    }
+
+    public AuthUser criarUtilizadorAdmin(
+            String username,
+            String email,
+            String password,
+            AuthRole role) {
+
+        String normalizedUsername = normalizeUsername(username);
+        String normalizedEmail = normalizeEmail(email);
+
+        if (normalizedUsername.isBlank() || normalizedUsername.length() < 3) {
+            throw new IllegalArgumentException("O utilizador deve ter pelo menos 3 caracteres.");
+        }
+        if (normalizedEmail.isBlank() || !normalizedEmail.contains("@")) {
+            throw new IllegalArgumentException("Email inválido.");
+        }
+        if (password == null || password.length() < 4) {
+            throw new IllegalArgumentException("A password deve ter pelo menos 4 caracteres.");
+        }
+        if (role == null) {
+            throw new IllegalArgumentException("Selecione o perfil.");
+        }
+
+        Properties users = loadUsers();
+        if (users.containsKey(normalizedUsername)) {
+            throw new IllegalArgumentException("Já existe uma conta com esse utilizador.");
+        }
+
+        users.setProperty(
+                normalizedUsername,
+                buildUserValue(hashPassword(password), role, normalizedEmail)
+        );
+        saveUsers(users);
+
+        return new AuthUser(normalizedUsername, normalizedEmail, role);
+    }
+
+    public AuthUser atualizarUtilizadorAdmin(
+            String username,
+            String email,
+            AuthRole role,
+            String newPassword) {
+
+        String normalized = normalizeUsername(username);
+        String normalizedEmail = normalizeEmail(email);
+
+        if (normalizedEmail.isBlank() || !normalizedEmail.contains("@")) {
+            throw new IllegalArgumentException("Email inválido.");
+        }
+        if (role == null) {
+            throw new IllegalArgumentException("Perfil obrigatório.");
+        }
+        if (normalized.equals(DEFAULT_ADMIN_USERNAME) && role != AuthRole.ADMIN) {
+            throw new IllegalArgumentException("Não é possível alterar o perfil do administrador padrão.");
+        }
+
+        Properties users = loadUsers();
+        if (!users.containsKey(normalized)) {
+            throw new IllegalArgumentException("Utilizador não encontrado.");
+        }
+
+        UserRecord current = parseUserRecord(users.getProperty(normalized));
+        String passwordHash = (newPassword != null && !newPassword.isBlank())
+                ? hashPassword(newPassword)
+                : current.passwordHash;
+
+        users.setProperty(normalized, buildUserValue(passwordHash, role, normalizedEmail));
+        saveUsers(users);
+
+        return new AuthUser(normalized, normalizedEmail, role);
     }
 
     public void register(

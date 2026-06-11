@@ -13,4 +13,6 @@ public final class UiLabels {
     public static final String RESERVAS = "🗃 Reservas";
     public static final String PISTAS = "🗺 Pistas";
     public static final String PERFIL = "👤 Perfil";
+    public static final String UTILIZADORES = "👥 Utilizadores";
+    public static final String CALENDARIO = "📅 Calendário";
 }
