@@ -1,7 +1,6 @@
 package pt.kartodromo.desktop.ui.corridas;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -24,7 +23,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableModel;
 
 import pt.kartodromo.core.bll.CategoriaKartService;
@@ -33,20 +31,12 @@ import pt.kartodromo.core.bll.CorridaService;
 import pt.kartodromo.core.model.CategoriaKart;
 import pt.kartodromo.core.model.Cliente;
 import pt.kartodromo.core.model.Corrida;
+import pt.kartodromo.desktop.ui.UiStyle;
 
 public class CorridaPanel extends JPanel {
 
     private static final DateTimeFormatter DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-    private static final Color BACKGROUND_COLOR = new Color(245, 247, 250);
-    private static final Color CARD_COLOR = Color.WHITE;
-    private static final Color BORDER_COLOR = new Color(215, 220, 225);
-    private static final Color PRIMARY_BLUE = new Color(33, 150, 243);
-    private static final Color CREATE_GREEN = new Color(46, 125, 50);
-    private static final Color UPDATE_BLUE = new Color(21, 101, 192);
-    private static final Color DELETE_RED = new Color(198, 40, 40);
-    private static final Color CLEAR_GRAY = new Color(97, 97, 97);
 
     private final CorridaService corridaService = new CorridaService();
     private final CategoriaKartService categoriaService = new CategoriaKartService();
@@ -85,29 +75,22 @@ public class CorridaPanel extends JPanel {
 
     public CorridaPanel() {
         setLayout(new BorderLayout(20, 20));
-        setBackground(BACKGROUND_COLOR);
+        setBackground(UiStyle.BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         configureComboRenderers();
 
-        add(createCard(buildForm()), BorderLayout.NORTH);
-        add(createCard(buildTable()), BorderLayout.CENTER);
+        add(UiStyle.createCard(buildForm()), BorderLayout.NORTH);
+        add(UiStyle.createCard(buildTable()), BorderLayout.CENTER);
 
         refreshData();
     }
 
     private JPanel buildForm() {
-        JButton criarButton =
-                createActionButton("＋ Nova", CREATE_GREEN);
-
-        JButton atualizarButton =
-                createActionButton("✎ Atualizar", UPDATE_BLUE);
-
-        JButton removerButton =
-                createActionButton("🗑 Remover", DELETE_RED);
-
-        JButton limparButton =
-                createActionButton("↺ Limpar", CLEAR_GRAY);
+        JButton criarButton = UiStyle.createActionButton("+ Nova", UiStyle.CREATE_GREEN);
+        JButton atualizarButton = UiStyle.createActionButton("✎ Atualizar", UiStyle.UPDATE_BLUE);
+        JButton removerButton = UiStyle.createActionButton("🗑 Remover", UiStyle.DELETE_RED);
+        JButton limparButton = UiStyle.createActionButton("↺ Limpar", UiStyle.CLEAR_GRAY);
 
         criarButton.addActionListener(e -> criarCorrida());
         atualizarButton.addActionListener(e -> atualizarCorrida());
@@ -115,15 +98,10 @@ public class CorridaPanel extends JPanel {
         limparButton.addActionListener(e -> limparFormulario());
 
         JPanel fieldsPanel = new JPanel(new GridBagLayout());
-        fieldsPanel.setBackground(CARD_COLOR);
-        fieldsPanel.setBorder(
-                BorderFactory.createTitledBorder("🏁 Dados da Corrida")
-        );
+        fieldsPanel.setOpaque(false);
+        fieldsPanel.setBorder(BorderFactory.createTitledBorder("🏁 Dados da Corrida"));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(7, 8, 7, 8);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
+        GridBagConstraints gbc = createGbc();
 
         addFormRow(fieldsPanel, gbc, 0, "Data/hora (yyyy-MM-dd HH:mm)", dataHoraField);
         addFormRow(fieldsPanel, gbc, 1, "Duração (minutos)", duracaoField);
@@ -133,15 +111,14 @@ public class CorridaPanel extends JPanel {
         addFormRow(fieldsPanel, gbc, 5, "Categoria", categoriaCombo);
 
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
-        actionsPanel.setBackground(CARD_COLOR);
-
+        actionsPanel.setOpaque(false);
         actionsPanel.add(criarButton);
         actionsPanel.add(atualizarButton);
         actionsPanel.add(removerButton);
         actionsPanel.add(limparButton);
 
         JPanel form = new JPanel(new BorderLayout(10, 10));
-        form.setBackground(CARD_COLOR);
+        form.setOpaque(false);
         form.add(fieldsPanel, BorderLayout.CENTER);
         form.add(actionsPanel, BorderLayout.SOUTH);
 
@@ -150,27 +127,13 @@ public class CorridaPanel extends JPanel {
 
     private JScrollPane buildTable() {
         corridasTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        corridasTable.setAutoCreateRowSorter(true);
-        corridasTable.setRowHeight(32);
-        corridasTable.setFillsViewportHeight(true);
-        corridasTable.setGridColor(new Color(230, 230, 230));
-        corridasTable.setSelectionBackground(new Color(66, 133, 244));
-        corridasTable.setSelectionForeground(Color.WHITE);
+        UiStyle.styleTable(corridasTable);
 
-        corridasTable.getTableHeader().setReorderingAllowed(false);
-        corridasTable.getTableHeader().setFont(
-                new Font("Segoe UI", Font.BOLD, 14)
-        );
-        corridasTable.getTableHeader().setBackground(PRIMARY_BLUE);
-        corridasTable.getTableHeader().setForeground(Color.WHITE);
-
-        corridasTable
-                .getSelectionModel()
-                .addListSelectionListener(e -> {
-                    if (!e.getValueIsAdjusting()) {
-                        carregarCorridaSelecionada();
-                    }
-                });
+        corridasTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                carregarCorridaSelecionada();
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(corridasTable);
         scroll.setBorder(BorderFactory.createTitledBorder("Corridas"));
@@ -180,26 +143,22 @@ public class CorridaPanel extends JPanel {
 
     private void criarCorrida() {
         try {
-            CategoriaKart categoria =
-                    (CategoriaKart) categoriaCombo.getSelectedItem();
-
-            Cliente cliente =
-                    (Cliente) clienteCombo.getSelectedItem();
+            CategoriaKart categoria = (CategoriaKart) categoriaCombo.getSelectedItem();
+            Cliente cliente = (Cliente) clienteCombo.getSelectedItem();
 
             if (categoria == null || cliente == null) {
                 showError("Selecione cliente e categoria.");
                 return;
             }
 
-            Corrida corrida =
-                    corridaService.criarCorrida(
-                            LocalDateTime.parse(dataHoraField.getText().trim(), DATE_TIME_FORMAT),
-                            Integer.parseInt(duracaoField.getText().trim()),
-                            Integer.parseInt(vagasField.getText().trim()),
-                            categoria.getId(),
-                            cliente.getId(),
-                            layoutField.getText().trim()
-                    );
+            Corrida corrida = corridaService.criarCorrida(
+                    LocalDateTime.parse(dataHoraField.getText().trim(), DATE_TIME_FORMAT),
+                    Integer.parseInt(duracaoField.getText().trim()),
+                    Integer.parseInt(vagasField.getText().trim()),
+                    categoria.getId(),
+                    cliente.getId(),
+                    layoutField.getText().trim()
+            );
 
             showInfo("Corrida criada com sucesso: " + corrida.getId());
 
@@ -222,11 +181,8 @@ public class CorridaPanel extends JPanel {
         }
 
         try {
-            CategoriaKart categoria =
-                    (CategoriaKart) categoriaCombo.getSelectedItem();
-
-            Cliente cliente =
-                    (Cliente) clienteCombo.getSelectedItem();
+            CategoriaKart categoria = (CategoriaKart) categoriaCombo.getSelectedItem();
+            Cliente cliente = (Cliente) clienteCombo.getSelectedItem();
 
             if (categoria == null || cliente == null) {
                 showError("Selecione cliente e categoria.");
@@ -296,11 +252,9 @@ public class CorridaPanel extends JPanel {
             return;
         }
 
-        int modelRow =
-                corridasTable.convertRowIndexToModel(selectedRow);
+        int modelRow = corridasTable.convertRowIndexToModel(selectedRow);
 
-        corridaSelecionadaId =
-                (Long) corridasTableModel.getValueAt(modelRow, 0);
+        corridaSelecionadaId = (Long) corridasTableModel.getValueAt(modelRow, 0);
 
         Corrida corrida = encontrarCorridaPorId(corridaSelecionadaId);
 
@@ -313,8 +267,13 @@ public class CorridaPanel extends JPanel {
         vagasField.setText(String.valueOf(corrida.getVagasMaximas()));
         layoutField.setText(corrida.getLayoutNome());
 
-        selecionarClientePorId(corrida.getCliente().getId());
-        selecionarCategoriaPorId(corrida.getCategoria().getId());
+        if (corrida.getCliente() != null) {
+            selecionarClientePorId(corrida.getCliente().getId());
+        }
+
+        if (corrida.getCategoria() != null) {
+            selecionarCategoriaPorId(corrida.getCategoria().getId());
+        }
     }
 
     private Corrida encontrarCorridaPorId(Long id) {
@@ -413,92 +372,63 @@ public class CorridaPanel extends JPanel {
     }
 
     private void configureComboRenderers() {
-        clienteCombo.setRenderer(
-                new DefaultListCellRenderer() {
-                    @Override
-                    public Component getListCellRendererComponent(
-                            JList<?> list,
-                            Object value,
-                            int index,
-                            boolean isSelected,
-                            boolean cellHasFocus) {
+        clienteCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus) {
 
-                        String text = "";
+                String text = "";
 
-                        if (value instanceof Cliente cliente) {
-                            text = cliente.getNome();
-                        }
-
-                        return super.getListCellRendererComponent(
-                                list,
-                                text,
-                                index,
-                                isSelected,
-                                cellHasFocus
-                        );
-                    }
+                if (value instanceof Cliente cliente) {
+                    text = cliente.getNome();
                 }
-        );
 
-        categoriaCombo.setRenderer(
-                new DefaultListCellRenderer() {
-                    @Override
-                    public Component getListCellRendererComponent(
-                            JList<?> list,
-                            Object value,
-                            int index,
-                            boolean isSelected,
-                            boolean cellHasFocus) {
+                return super.getListCellRendererComponent(
+                        list,
+                        text,
+                        index,
+                        isSelected,
+                        cellHasFocus
+                );
+            }
+        });
 
-                        String text = "";
+        categoriaCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list,
+                    Object value,
+                    int index,
+                    boolean isSelected,
+                    boolean cellHasFocus) {
 
-                        if (value instanceof CategoriaKart categoria) {
-                            text = categoria.getDescricao();
-                        }
+                String text = "";
 
-                        return super.getListCellRendererComponent(
-                                list,
-                                text,
-                                index,
-                                isSelected,
-                                cellHasFocus
-                        );
-                    }
+                if (value instanceof CategoriaKart categoria) {
+                    text = categoria.getDescricao();
                 }
-        );
+
+                return super.getListCellRendererComponent(
+                        list,
+                        text,
+                        index,
+                        isSelected,
+                        cellHasFocus
+                );
+            }
+        });
     }
 
-    private JPanel createCard(Component component) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(CARD_COLOR);
-
-        card.setBorder(
-                new CompoundBorder(
-                        BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                        BorderFactory.createEmptyBorder(14, 14, 14, 14)
-                )
-        );
-
-        card.add(component, BorderLayout.CENTER);
-
-        return card;
-    }
-
-    private JButton createActionButton(String text, Color background) {
-        JButton button = new JButton(text);
-
-        button.setBackground(background);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-
-        button.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(background.darker()),
-                        BorderFactory.createEmptyBorder(7, 14, 7, 14)
-                )
-        );
-
-        return button;
+    private GridBagConstraints createGbc() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(7, 8, 7, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        return gbc;
     }
 
     private void addFormRow(
@@ -506,7 +436,7 @@ public class CorridaPanel extends JPanel {
             GridBagConstraints gbc,
             int row,
             String label,
-            Component component) {
+            Component field) {
 
         gbc.gridx = 0;
         gbc.gridy = row;
@@ -515,7 +445,6 @@ public class CorridaPanel extends JPanel {
 
         JLabel labelComponent = new JLabel(label);
         labelComponent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
         panel.add(labelComponent, gbc);
 
         gbc.gridx = 1;
@@ -523,25 +452,15 @@ public class CorridaPanel extends JPanel {
         gbc.weightx = 1;
         gbc.gridwidth = 1;
 
-        component.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        panel.add(component, gbc);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        panel.add(field, gbc);
     }
 
     private void showInfo(String message) {
-        JOptionPane.showMessageDialog(
-                this,
-                message,
-                "Sucesso",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        JOptionPane.showMessageDialog(this, message, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(
-                this,
-                message,
-                "Erro",
-                JOptionPane.ERROR_MESSAGE
-        );
+        JOptionPane.showMessageDialog(this, message, "Erro", JOptionPane.ERROR_MESSAGE);
     }
 }

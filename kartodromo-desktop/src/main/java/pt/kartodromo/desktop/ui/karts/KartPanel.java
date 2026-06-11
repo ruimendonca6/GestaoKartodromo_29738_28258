@@ -1,7 +1,6 @@
 package pt.kartodromo.desktop.ui.karts;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -22,7 +21,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableModel;
 
 import pt.kartodromo.core.bll.CategoriaKartService;
@@ -30,47 +28,23 @@ import pt.kartodromo.core.bll.KartService;
 import pt.kartodromo.core.model.CategoriaKart;
 import pt.kartodromo.core.model.Kart;
 import pt.kartodromo.core.model.enums.KartEstado;
+import pt.kartodromo.desktop.ui.UiStyle;
 
 public class KartPanel extends JPanel {
 
-    private static final Color BACKGROUND_COLOR = new Color(245, 247, 250);
-    private static final Color CARD_COLOR = Color.WHITE;
-    private static final Color BORDER_COLOR = new Color(215, 220, 225);
-    private static final Color PRIMARY_BLUE = new Color(33, 150, 243);
-    private static final Color CREATE_GREEN = new Color(46, 125, 50);
-    private static final Color UPDATE_BLUE = new Color(21, 101, 192);
-    private static final Color DELETE_RED = new Color(198, 40, 40);
-    private static final Color CLEAR_GRAY = new Color(97, 97, 97);
-
-    private final KartService kartService =
-            new KartService();
-
-    private final CategoriaKartService categoriaService =
-            new CategoriaKartService();
+    private final KartService kartService = new KartService();
+    private final CategoriaKartService categoriaService = new CategoriaKartService();
 
     private Long kartSelecionadoId = null;
 
-    private final JTextField numeroField =
-            new JTextField("1");
-
-    private final JComboBox<CategoriaKart> categoriaCombo =
-            new JComboBox<>();
-
-    private final JComboBox<KartEstado> estadoCombo =
-            new JComboBox<>(KartEstado.values());
-
-    private final JCheckBox disponivelCheck =
-            new JCheckBox("Disponível", true);
+    private final JTextField numeroField = new JTextField("1");
+    private final JComboBox<CategoriaKart> categoriaCombo = new JComboBox<>();
+    private final JComboBox<KartEstado> estadoCombo = new JComboBox<>(KartEstado.values());
+    private final JCheckBox disponivelCheck = new JCheckBox("Disponível", true);
 
     private final DefaultTableModel kartsTableModel =
             new DefaultTableModel(
-                    new Object[]{
-                            "ID",
-                            "Número",
-                            "Categoria",
-                            "Estado",
-                            "Disponível"
-                    },
+                    new Object[]{"ID", "Número", "Categoria", "Estado", "Disponível"},
                     0
             ) {
                 @Override
@@ -79,88 +53,52 @@ public class KartPanel extends JPanel {
                 }
             };
 
-    private final JTable kartsTable =
-            new JTable(kartsTableModel);
+    private final JTable kartsTable = new JTable(kartsTableModel);
 
     public KartPanel() {
         setLayout(new BorderLayout(20, 20));
-        setBackground(BACKGROUND_COLOR);
+        setBackground(UiStyle.BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         configureComboRenderer();
 
-        add(createCard(buildForm()), BorderLayout.NORTH);
-        add(createCard(buildTable()), BorderLayout.CENTER);
+        add(UiStyle.createCard(buildForm()), BorderLayout.NORTH);
+        add(UiStyle.createCard(buildTable()), BorderLayout.CENTER);
 
         refreshData();
     }
 
     private JPanel buildForm() {
-        JButton criarButton =
-                createActionButton("＋ Novo", CREATE_GREEN);
-
-        JButton atualizarButton =
-                createActionButton("✎ Atualizar", UPDATE_BLUE);
-
-        JButton removerButton =
-                createActionButton("🗑 Remover", DELETE_RED);
-
-        JButton limparButton =
-                createActionButton("↺ Limpar", CLEAR_GRAY);
+        JButton criarButton = UiStyle.createActionButton("+ Novo", UiStyle.CREATE_GREEN);
+        JButton atualizarButton = UiStyle.createActionButton("✎ Atualizar", UiStyle.UPDATE_BLUE);
+        JButton removerButton = UiStyle.createActionButton("🗑 Remover", UiStyle.DELETE_RED);
+        JButton limparButton = UiStyle.createActionButton("↺ Limpar", UiStyle.CLEAR_GRAY);
 
         criarButton.addActionListener(e -> criarKart());
         atualizarButton.addActionListener(e -> atualizarKart());
         removerButton.addActionListener(e -> removerKart());
         limparButton.addActionListener(e -> limparFormulario());
 
-        JPanel fieldsPanel =
-                new JPanel(new GridBagLayout());
+        JPanel fieldsPanel = new JPanel(new GridBagLayout());
+        fieldsPanel.setOpaque(false);
+        fieldsPanel.setBorder(BorderFactory.createTitledBorder("🏎 Dados do Kart"));
 
-        fieldsPanel.setBackground(CARD_COLOR);
-
-        fieldsPanel.setBorder(
-                BorderFactory.createTitledBorder("🏎 Dados do Kart")
-        );
-
-        GridBagConstraints gbc =
-                new GridBagConstraints();
-
-        gbc.insets =
-                new Insets(7, 8, 7, 8);
-
-        gbc.fill =
-                GridBagConstraints.HORIZONTAL;
-
-        gbc.weightx =
-                1;
+        GridBagConstraints gbc = createGbc();
 
         addFormRow(fieldsPanel, gbc, 0, "Número", numeroField);
         addFormRow(fieldsPanel, gbc, 1, "Categoria", categoriaCombo);
         addFormRow(fieldsPanel, gbc, 2, "Estado", estadoCombo);
         addFormRow(fieldsPanel, gbc, 3, "Disponibilidade", disponivelCheck);
 
-        JPanel actionsPanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.LEFT,
-                                10,
-                                6
-                        )
-                );
-
-        actionsPanel.setBackground(CARD_COLOR);
-
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        actionsPanel.setOpaque(false);
         actionsPanel.add(criarButton);
         actionsPanel.add(atualizarButton);
         actionsPanel.add(removerButton);
         actionsPanel.add(limparButton);
 
-        JPanel form =
-                new JPanel(
-                        new BorderLayout(10, 10)
-                );
-
-        form.setBackground(CARD_COLOR);
+        JPanel form = new JPanel(new BorderLayout(10, 10));
+        form.setOpaque(false);
         form.add(fieldsPanel, BorderLayout.CENTER);
         form.add(actionsPanel, BorderLayout.SOUTH);
 
@@ -169,61 +107,35 @@ public class KartPanel extends JPanel {
 
     private JScrollPane buildTable() {
         kartsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        kartsTable.setAutoCreateRowSorter(true);
-        kartsTable.setRowHeight(32);
-        kartsTable.setFillsViewportHeight(true);
-        kartsTable.setGridColor(new Color(230, 230, 230));
-        kartsTable.setSelectionBackground(new Color(66, 133, 244));
-        kartsTable.setSelectionForeground(Color.WHITE);
+        UiStyle.styleTable(kartsTable);
 
-        kartsTable.getTableHeader().setReorderingAllowed(false);
+        kartsTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                carregarKartSelecionado();
+            }
+        });
 
-        kartsTable.getTableHeader().setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        14
-                )
-        );
-
-        kartsTable.getTableHeader().setBackground(PRIMARY_BLUE);
-        kartsTable.getTableHeader().setForeground(Color.WHITE);
-
-        kartsTable
-                .getSelectionModel()
-                .addListSelectionListener(e -> {
-                    if (!e.getValueIsAdjusting()) {
-                        carregarKartSelecionado();
-                    }
-                });
-
-        JScrollPane scroll =
-                new JScrollPane(kartsTable);
-
-        scroll.setBorder(
-                BorderFactory.createTitledBorder("Karts")
-        );
+        JScrollPane scroll = new JScrollPane(kartsTable);
+        scroll.setBorder(BorderFactory.createTitledBorder("Karts"));
 
         return scroll;
     }
 
     private void criarKart() {
         try {
-            CategoriaKart categoria =
-                    (CategoriaKart) categoriaCombo.getSelectedItem();
+            CategoriaKart categoria = (CategoriaKart) categoriaCombo.getSelectedItem();
 
             if (categoria == null) {
                 showError("Crie uma categoria antes de criar karts.");
                 return;
             }
 
-            Kart kart =
-                    kartService.criarKart(
-                            Integer.parseInt(numeroField.getText().trim()),
-                            (KartEstado) estadoCombo.getSelectedItem(),
-                            disponivelCheck.isSelected(),
-                            categoria.getId()
-                    );
+            Kart kart = kartService.criarKart(
+                    Integer.parseInt(numeroField.getText().trim()),
+                    (KartEstado) estadoCombo.getSelectedItem(),
+                    disponivelCheck.isSelected(),
+                    categoria.getId()
+            );
 
             showInfo("Kart criado com sucesso: " + kart.getId());
 
@@ -274,18 +186,15 @@ public class KartPanel extends JPanel {
     }
 
     private void carregarKartSelecionado() {
-        int selectedRow =
-                kartsTable.getSelectedRow();
+        int selectedRow = kartsTable.getSelectedRow();
 
         if (selectedRow == -1) {
             return;
         }
 
-        int modelRow =
-                kartsTable.convertRowIndexToModel(selectedRow);
+        int modelRow = kartsTable.convertRowIndexToModel(selectedRow);
 
-        kartSelecionadoId =
-                (Long) kartsTableModel.getValueAt(modelRow, 0);
+        kartSelecionadoId = (Long) kartsTableModel.getValueAt(modelRow, 0);
 
         numeroField.setText(
                 kartsTableModel.getValueAt(modelRow, 1).toString()
@@ -300,21 +209,17 @@ public class KartPanel extends JPanel {
         );
 
         disponivelCheck.setSelected(
-                Boolean.parseBoolean(
-                        kartsTableModel.getValueAt(modelRow, 4).toString()
-                )
+                "Sim".equals(kartsTableModel.getValueAt(modelRow, 4).toString())
         );
     }
 
     private void selecionarCategoriaPorDescricao(String descricao) {
         for (int i = 0; i < categoriaCombo.getItemCount(); i++) {
-            CategoriaKart categoria =
-                    categoriaCombo.getItemAt(i);
+            CategoriaKart categoria = categoriaCombo.getItemAt(i);
 
             if (categoria != null
                     && categoria.getDescricao() != null
                     && categoria.getDescricao().equals(descricao)) {
-
                 categoriaCombo.setSelectedItem(categoria);
                 return;
             }
@@ -360,9 +265,7 @@ public class KartPanel extends JPanel {
                                     ? kart.getCategoria().getDescricao()
                                     : "",
                             kart.getEstado(),
-                            kart.isDisponivel()
-                                    ? "Sim"
-                                    : "Não"
+                            kart.isDisponivel() ? "Sim" : "Não"
                     }
             );
         }
@@ -397,40 +300,12 @@ public class KartPanel extends JPanel {
         );
     }
 
-    private JPanel createCard(Component component) {
-        JPanel card =
-                new JPanel(new BorderLayout());
-
-        card.setBackground(CARD_COLOR);
-
-        card.setBorder(
-                new CompoundBorder(
-                        BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                        BorderFactory.createEmptyBorder(14, 14, 14, 14)
-                )
-        );
-
-        card.add(component, BorderLayout.CENTER);
-
-        return card;
-    }
-
-    private JButton createActionButton(String text, Color background) {
-        JButton button =
-                new JButton(text);
-
-        button.setBackground(background);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-
-        button.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(background.darker()),
-                        BorderFactory.createEmptyBorder(7, 14, 7, 14)
-                )
-        );
-
-        return button;
+    private GridBagConstraints createGbc() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(7, 8, 7, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        return gbc;
     }
 
     private void addFormRow(
@@ -438,24 +313,15 @@ public class KartPanel extends JPanel {
             GridBagConstraints gbc,
             int row,
             String label,
-            Component component) {
+            Component field) {
 
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
         gbc.gridwidth = 1;
 
-        JLabel labelComponent =
-                new JLabel(label);
-
-        labelComponent.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        13
-                )
-        );
-
+        JLabel labelComponent = new JLabel(label);
+        labelComponent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         panel.add(labelComponent, gbc);
 
         gbc.gridx = 1;
@@ -463,32 +329,15 @@ public class KartPanel extends JPanel {
         gbc.weightx = 1;
         gbc.gridwidth = 1;
 
-        component.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        13
-                )
-        );
-
-        panel.add(component, gbc);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        panel.add(field, gbc);
     }
 
     private void showInfo(String message) {
-        JOptionPane.showMessageDialog(
-                this,
-                message,
-                "Sucesso",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        JOptionPane.showMessageDialog(this, message, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(
-                this,
-                message,
-                "Erro",
-                JOptionPane.ERROR_MESSAGE
-        );
+        JOptionPane.showMessageDialog(this, message, "Erro", JOptionPane.ERROR_MESSAGE);
     }
 }
