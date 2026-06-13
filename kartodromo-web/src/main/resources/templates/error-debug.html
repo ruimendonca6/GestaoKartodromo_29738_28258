@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Erro — Kartódromo</title>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #f5f5f5; padding: 2rem; }
+        h1 { color: #ef5350; }
+        .msg { background: #2a2a2a; padding: 1rem; border-radius: 6px; color: #ff8a65; white-space: pre-wrap; word-break: break-all; }
+        .trace { background: #111; padding: 1rem; border-radius: 6px; font-size: 0.8rem; white-space: pre-wrap; overflow-x: auto; color: #aaa; margin-top: 1rem; }
+        a { color: #64b5f6; }
+    </style>
+</head>
+<body>
+<h1>Erro Interno</h1>
+<p><a href="/login">← Voltar ao login</a></p>
+<div class="msg" th:text="${errorMessage}"></div>
+<div class="trace" th:text="${stackTrace}"></div>
+</body>
+</html>

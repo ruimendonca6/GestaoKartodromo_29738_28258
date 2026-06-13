@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Perfil — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header">
+        <h1>Perfil</h1>
+        <p>Informações da conta</p>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+    <div th:if="${erro}"    class="alert alert-error"   th:text="${erro}"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:860px">
+        <!-- Info -->
+        <div class="card">
+            <div class="card-title">👤 Informações</div>
+            <table>
+                <tr><td style="padding:8px 0;color:var(--text-gray)">Username</td>
+                    <td><strong th:text="${authUser.username}"></strong></td></tr>
+                <tr><td style="padding:8px 0;color:var(--text-gray)">Email</td>
+                    <td th:text="${authUser.email}"></td></tr>
+                <tr><td style="padding:8px 0;color:var(--text-gray)">Perfil</td>
+                    <td>
+                        <span class="badge badge-red"   th:if="${authUser.admin}">ADMIN</span>
+                        <span class="badge badge-blue"  th:if="${authUser.funcionario}">FUNCIONÁRIO</span>
+                        <span class="badge badge-green" th:if="${authUser.cliente}">CLIENTE</span>
+                    </td>
+                </tr>
+            </table>
+
+            <div style="margin-top:16px">
+                <button class="btn btn-blue btn-sm" onclick="openModal('modal-email')">✎ Alterar Email</button>
+            </div>
+        </div>
+
+        <!-- Alterar Password -->
+        <div class="card">
+            <div class="card-title">🔑 Alterar Password</div>
+            <form method="post" action="/perfil/alterarPassword">
+                <div class="form-group">
+                    <label>Password Atual</label>
+                    <input type="password" name="passwordAtual" required/>
+                </div>
+                <div class="form-group">
+                    <label>Nova Password</label>
+                    <input type="password" name="novaPassword" required/>
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Nova Password</label>
+                    <input type="password" name="confirmarPassword" required/>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-blue">Alterar Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Email -->
+<div class="modal-overlay" id="modal-email">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-email')">✕</button>
+        <h2>Alterar Email</h2>
+        <form method="post" action="/perfil/atualizarEmail">
+            <div class="form-group">
+                <label>Novo Email</label>
+                <input type="email" name="email" th:value="${authUser.email}" required/>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-blue">Guardar</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-email')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

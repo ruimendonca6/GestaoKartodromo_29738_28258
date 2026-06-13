@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Reservas — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1>Reservas</h1>
+            <p>Gestão de reservas de karts e pistas</p>
+        </div>
+        <button class="btn btn-green" onclick="openModal('modal-criar')">+ Nova Reserva</button>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+    <div th:if="${erro}"    class="alert alert-error"   th:text="${erro}"></div>
+
+    <div class="card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Cliente</th>
+                        <th>Kart</th>
+                        <th>Pista</th>
+                        <th>Início</th>
+                        <th>Fim</th>
+                        <th>Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(reservas)}">
+                        <td colspan="8" style="text-align:center;color:var(--text-gray);padding:24px">Nenhuma reserva registada.</td>
+                    </tr>
+                    <tr th:each="r : ${reservas}">
+                        <td th:text="${r.id}" class="text-gray"></td>
+                        <td><strong th:text="${r.cliente.nome}"></strong></td>
+                        <td th:text="'#' + ${r.kart.numero}" class="text-gray"></td>
+                        <td th:text="${r.pistaNome}"></td>
+                        <td class="nowrap" th:text="${#temporals.format(r.dataHoraInicio,'dd/MM/yy HH:mm')}"></td>
+                        <td class="nowrap" th:text="${#temporals.format(r.dataHoraFim,'dd/MM/yy HH:mm')}"></td>
+                        <td>
+                            <span th:if="${r.estado.name()=='PENDENTE'}"   class="badge badge-orange">PENDENTE</span>
+                            <span th:if="${r.estado.name()=='CONFIRMADA'}" class="badge badge-green">CONFIRMADA</span>
+                            <span th:if="${r.estado.name()=='CANCELADA'}"  class="badge badge-red">CANCELADA</span>
+                        </td>
+                        <td>
+                            <div class="flex gap-8">
+                                <button class="btn btn-blue btn-xs"
+                                        th:attr="data-id=${r.id},data-cliente-id=${r.cliente.id},data-kart-id=${r.kart.id},data-pista-nome=${r.pistaNome},data-data-hora-inicio=${#temporals.format(r.dataHoraInicio,'yyyy-MM-dd') + 'T' + #temporals.format(r.dataHoraInicio,'HH:mm')},data-data-hora-fim=${#temporals.format(r.dataHoraFim,'yyyy-MM-dd') + 'T' + #temporals.format(r.dataHoraFim,'HH:mm')},data-estado=${r.estado.name()}"
+                                        onclick="populateEditFromDataset(this,'modal-editar')">
+                                    ✎ Editar
+                                </button>
+                                <form th:id="'del-' + ${r.id}" method="post" action="/reservas/remover">
+                                    <input type="hidden" name="id" th:value="${r.id}"/>
+                                    <button type="button" class="btn btn-red btn-xs"
+                                            th:attr="data-form-id='del-' + ${r.id},data-msg='Eliminar reserva?'"
+                                            onclick="confirmDeleteEl(this)">🗑</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Criar -->
+<div class="modal-overlay" id="modal-criar">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-criar')">✕</button>
+        <h2>Nova Reserva</h2>
+        <form method="post" action="/reservas/criar">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select name="clienteId" required>
+                        <option value="">Selecionar...</option>
+                        <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kart</label>
+                    <select name="kartId" required>
+                        <option value="">Selecionar...</option>
+                        <option th:each="k : ${karts}" th:value="${k.id}" th:text="'Kart #' + ${k.numero} + ' — ' + ${k.categoria.descricao}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Pista</label>
+                    <input type="text" name="pistaNome" required/>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado">
+                        <option th:each="e : ${estados}" th:value="${e.name()}" th:text="${e.name()}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Início</label>
+                    <input type="datetime-local" name="dataHoraInicio" required/>
+                </div>
+                <div class="form-group">
+                    <label>Fim</label>
+                    <input type="datetime-local" name="dataHoraFim" required/>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-green">Criar Reserva</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-criar')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal-overlay" id="modal-editar">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-editar')">✕</button>
+        <h2>Editar Reserva</h2>
+        <form method="post" action="/reservas/atualizar">
+            <input type="hidden" name="id"/>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select name="clienteId" required>
+                        <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kart</label>
+                    <select name="kartId" required>
+                        <option th:each="k : ${karts}" th:value="${k.id}" th:text="'Kart #' + ${k.numero} + ' — ' + ${k.categoria.descricao}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Pista</label>
+                    <input type="text" name="pistaNome" required/>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado">
+                        <option th:each="e : ${estados}" th:value="${e.name()}" th:text="${e.name()}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Início</label>
+                    <input type="datetime-local" name="dataHoraInicio" required/>
+                </div>
+                <div class="form-group">
+                    <label>Fim</label>
+                    <input type="datetime-local" name="dataHoraFim" required/>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-blue">Guardar</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-editar')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

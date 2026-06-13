@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Dashboard — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header">
+        <h1>Dashboard do Kartódromo</h1>
+        <p th:text="'Resumo geral · ' + ${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">Resumo geral</p>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-value text-blue" th:text="${totalClientes}">0</div>
+            <div class="stat-label">Clientes</div>
+            <div class="stat-sub">registados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:#7b1fa2" th:text="${totalCategorias}">0</div>
+            <div class="stat-label">Categorias</div>
+            <div class="stat-sub">disponíveis</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-green" th:text="${totalKarts}">0</div>
+            <div class="stat-label">Karts</div>
+            <div class="stat-sub">na frota</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-red" th:text="${totalCorridas}">0</div>
+            <div class="stat-label">Corridas</div>
+            <div class="stat-sub">realizadas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-blue" th:text="${totalReservas}">0</div>
+            <div class="stat-label">Reservas</div>
+            <div class="stat-sub">no total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-red" th:text="${reservasPendentes}">0</div>
+            <div class="stat-label">Pendentes</div>
+            <div class="stat-sub">a aguardar</div>
+        </div>
+    </div>
+
+    <!-- Hoje -->
+    <div class="card" style="max-width:480px">
+        <div class="card-title">Hoje</div>
+        <table>
+            <tr>
+                <td style="padding:8px 0;color:var(--text-gray)">Corridas agendadas</td>
+                <td class="text-right"><strong th:text="${corridasHoje}">—</strong></td>
+            </tr>
+            <tr>
+                <td style="padding:8px 0;color:var(--text-gray)">Reservas</td>
+                <td class="text-right"><strong th:text="${reservasHoje}">—</strong></td>
+            </tr>
+            <tr>
+                <td style="padding:8px 0;color:var(--text-gray)">Confirmadas</td>
+                <td class="text-right"><strong class="text-green" th:text="${confirmadasHoje}">—</strong></td>
+            </tr>
+            <tr>
+                <td style="padding:8px 0;color:var(--text-gray)">Canceladas</td>
+                <td class="text-right"><strong class="text-red" th:text="${canceladasHoje}">—</strong></td>
+            </tr>
+        </table>
+    </div>
+</main>
+</body>
+</html>

@@ -8,6 +8,7 @@ import java.awt.Font;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.border.CompoundBorder;
@@ -59,6 +60,7 @@ public final class UiStyle {
     }
 
     public static JPanel createCard(Component component) {
+
         RoundedCardPanel card =
                 new RoundedCardPanel(
                         new BorderLayout(),
@@ -91,6 +93,7 @@ public final class UiStyle {
     }
 
     public static JPanel createSimpleCard(Component component) {
+
         RoundedCardPanel card =
                 new RoundedCardPanel(
                         new BorderLayout(),
@@ -101,7 +104,10 @@ public final class UiStyle {
 
         card.setBorder(
                 new CompoundBorder(
-                        BorderFactory.createLineBorder(BORDER_COLOR, 1),
+                        BorderFactory.createLineBorder(
+                                BORDER_COLOR,
+                                1
+                        ),
                         BorderFactory.createEmptyBorder(
                                 18,
                                 18,
@@ -116,7 +122,10 @@ public final class UiStyle {
         return card;
     }
 
-    public static JButton createActionButton(String text, Color background) {
+    public static JButton createActionButton(
+            String text,
+            Color background) {
+
         JButton button =
                 new JButton(text);
 
@@ -152,6 +161,7 @@ public final class UiStyle {
     }
 
     public static JButton createDangerButton(String text) {
+
         JButton button =
                 new JButton(text);
 
@@ -171,7 +181,9 @@ public final class UiStyle {
 
         button.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(PRIMARY_RED),
+                        BorderFactory.createLineBorder(
+                                PRIMARY_RED
+                        ),
                         BorderFactory.createEmptyBorder(
                                 10,
                                 18,
@@ -185,13 +197,17 @@ public final class UiStyle {
                 new java.awt.event.MouseAdapter() {
 
                     @Override
-                    public void mouseEntered(java.awt.event.MouseEvent e) {
+                    public void mouseEntered(
+                            java.awt.event.MouseEvent e) {
+
                         button.setBackground(PRIMARY_RED);
                         button.setForeground(Color.WHITE);
                     }
 
                     @Override
-                    public void mouseExited(java.awt.event.MouseEvent e) {
+                    public void mouseExited(
+                            java.awt.event.MouseEvent e) {
+
                         button.setBackground(Color.WHITE);
                         button.setForeground(PRIMARY_RED);
                     }
@@ -202,14 +218,23 @@ public final class UiStyle {
     }
 
     public static void styleTable(JTable table) {
+
         table.setRowHeight(32);
         table.setFillsViewportHeight(true);
         table.setAutoCreateRowSorter(true);
-        table.setGridColor(new Color(230, 230, 230));
-        table.setSelectionBackground(new Color(66, 133, 244));
+
+        table.setGridColor(
+                new Color(230, 230, 230)
+        );
+
+        table.setSelectionBackground(
+                new Color(66, 133, 244)
+        );
+
         table.setSelectionForeground(Color.WHITE);
 
-        table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader()
+                .setReorderingAllowed(false);
 
         table.getTableHeader().setFont(
                 new Font(
@@ -219,19 +244,64 @@ public final class UiStyle {
                 )
         );
 
-        table.getTableHeader().setBackground(PRIMARY_BLUE);
-        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader()
+                .setBackground(PRIMARY_BLUE);
+
+        table.getTableHeader()
+                .setForeground(Color.WHITE);
+    }
+
+    /**
+     * Título principal de página.
+     */
+    public static JLabel createPageTitle(String title) {
+
+        JLabel header =
+                new JLabel(title);
+
+        header.setFont(
+                new Font(
+                        "Segoe UI Emoji",
+                        Font.BOLD,
+                        26
+                )
+        );
+
+        header.setForeground(PRIMARY_RED);
+
+        header.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20,
+                        24,
+                        10,
+                        0
+                )
+        );
+
+        return header;
     }
 
     public static Font titleFont() {
-        return new Font("Segoe UI", Font.BOLD, 20);
+        return new Font(
+                "Segoe UI Emoji",
+                Font.BOLD,
+                26
+        );
     }
 
     public static Font labelFont() {
-        return new Font("Segoe UI", Font.PLAIN, 13);
+        return new Font(
+                "Segoe UI",
+                Font.PLAIN,
+                13
+        );
     }
 
     public static Font sectionFont() {
-        return new Font("Segoe UI", Font.BOLD, 12);
+        return new Font(
+                "Segoe UI",
+                Font.BOLD,
+                16
+        );
     }
 }

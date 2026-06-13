@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Disponibilidade — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header">
+        <h1>Disponibilidade</h1>
+        <p>Períodos ocupados e livres por pista</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card" style="margin-bottom:20px">
+        <form method="get" action="/disponibilidade" style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="margin:0">
+                <label>Data</label>
+                <input type="date" name="data" th:value="${#temporals.format(data,'yyyy-MM-dd')}"/>
+            </div>
+            <div class="form-group" style="margin:0">
+                <label>Pista</label>
+                <select name="pista">
+                    <option th:each="p : ${pistas}" th:value="${p}" th:text="${p}"
+                            th:selected="${p == pistaFiltro}"></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-blue">Filtrar</button>
+        </form>
+    </div>
+
+    <!-- Reservas do dia -->
+    <div class="card">
+        <div class="card-title">
+            <span th:text="'Ocupações em ' + ${pistaFiltro} + ' · ' + ${#temporals.format(data,'dd/MM/yyyy')}"></span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(ocupadas)}" style="text-align:center;color:var(--text-gray);padding:32px">
+            Nenhuma reserva confirmada ou pendente nesta pista neste dia.
+        </div>
+
+        <div class="table-wrapper" th:if="${!#lists.isEmpty(ocupadas)}">
+            <table>
+                <thead><tr><th>Início</th><th>Fim</th><th>Cliente</th><th>Kart</th><th>Estado</th></tr></thead>
+                <tbody>
+                    <tr th:each="r : ${ocupadas}">
+                        <td><strong th:text="${#temporals.format(r.dataHoraInicio,'HH:mm')}"></strong></td>
+                        <td th:text="${#temporals.format(r.dataHoraFim,'HH:mm')}"></td>
+                        <td th:text="${r.cliente.nome}"></td>
+                        <td th:text="'#' + ${r.kart.numero}"></td>
+                        <td>
+                            <span class="badge badge-blue"   th:if="${r.estado.name() == 'PENDENTE'}">PENDENTE</span>
+                            <span class="badge badge-green"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Timeline visual -->
+        <div th:if="${!#lists.isEmpty(ocupadas)}" style="margin-top:20px">
+            <div style="font-size:12px;color:var(--text-gray);margin-bottom:8px">09:00 — 22:00 (escala horária)</div>
+            <div style="position:relative;height:32px;background:var(--bg-card,#1e1e1e);border-radius:6px;overflow:hidden">
+                <div th:each="r : ${ocupadas}"
+                     style="position:absolute;top:0;height:100%;background:var(--blue);opacity:0.7;border-radius:4px"
+                     th:style="'position:absolute;top:0;height:100%;background:var(--blue);opacity:0.7;border-radius:4px;' +
+                               'left:' + ${(((r.dataHoraInicio.hour * 60 + r.dataHoraInicio.minute) - 540) * 100 / 780)} + '%;' +
+                               'width:' + ${(((r.dataHoraFim.hour * 60 + r.dataHoraFim.minute) - (r.dataHoraInicio.hour * 60 + r.dataHoraInicio.minute)) * 100 / 780)} + '%'"
+                     th:title="${r.cliente.nome} + ' · ' + ${#temporals.format(r.dataHoraInicio,'HH:mm')} + '-' + ${#temporals.format(r.dataHoraFim,'HH:mm')}">
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

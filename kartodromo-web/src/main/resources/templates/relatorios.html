@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Relatórios — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        @media print {
+            .sidebar, .page-header .btn, nav, .no-print { display: none !important; }
+            .main { margin: 0; padding: 0; }
+            .card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1>Relatórios</h1>
+            <p>Resumo geral do sistema</p>
+        </div>
+        <button class="btn btn-blue no-print" onclick="window.print()">🖨 Imprimir</button>
+    </div>
+
+    <!-- Resumo -->
+    <div class="stat-grid" style="margin-bottom:24px">
+        <div class="stat-card">
+            <div class="stat-value text-blue"  th:text="${#lists.size(clientes)}"></div>
+            <div class="stat-label">Clientes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-green" th:text="${#lists.size(karts)}"></div>
+            <div class="stat-label">Karts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-red"   th:text="${#lists.size(reservas)}"></div>
+            <div class="stat-label">Reservas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-red"   th:text="${#lists.size(corridas)}"></div>
+            <div class="stat-label">Corridas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:#f57c00" th:text="${#lists.size(manutencoes)}"></div>
+            <div class="stat-label">Manutenções</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:#7b1fa2" th:text="${#lists.size(resultados)}"></div>
+            <div class="stat-label">Resultados</div>
+        </div>
+    </div>
+
+    <!-- Clientes -->
+    <div class="card" style="margin-bottom:20px">
+        <div class="card-title">👥 Clientes</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Nome</th><th>Email</th><th>Data Nasc.</th><th>Experiência</th></tr></thead>
+                <tbody>
+                    <tr th:each="c : ${clientes}">
+                        <td th:text="${c.nome}"></td>
+                        <td th:text="${c.email}" class="text-gray"></td>
+                        <td th:text="${c.dataNascimento}" class="text-gray"></td>
+                        <td><span class="badge badge-blue" th:text="${c.nivelExperiencia}"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Karts -->
+    <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🏎 Karts</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>#</th><th>Categoria</th><th>Estado</th><th>Disponível</th></tr></thead>
+                <tbody>
+                    <tr th:each="k : ${karts}">
+                        <td><strong th:text="${k.numero}"></strong></td>
+                        <td th:text="${k.categoria.descricao}"></td>
+                        <td><span class="badge badge-blue" th:text="${k.estado}"></span></td>
+                        <td>
+                            <span class="badge badge-green" th:if="${k.disponivel}">Sim</span>
+                            <span class="badge badge-red"   th:if="${!k.disponivel}">Não</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Reservas -->
+    <div class="card" style="margin-bottom:20px">
+        <div class="card-title">📅 Reservas</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Data</th><th>Cliente</th><th>Kart</th><th>Pista</th><th>Estado</th></tr></thead>
+                <tbody>
+                    <tr th:each="r : ${reservas}">
+                        <td th:text="${#temporals.format(r.dataHoraInicio,'dd/MM/yyyy HH:mm')}" class="text-gray"></td>
+                        <td th:text="${r.cliente.nome}"></td>
+                        <td th:text="'#' + ${r.kart.numero}"></td>
+                        <td th:text="${r.pistaNome}"></td>
+                        <td><span class="badge badge-blue" th:text="${r.estado}"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Manutenções -->
+    <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🔧 Manutenções</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Kart</th><th>Descrição</th><th>Tipo</th><th>Entrada</th><th>Estado</th></tr></thead>
+                <tbody>
+                    <tr th:each="m : ${manutencoes}">
+                        <td><strong th:text="'#' + ${m.kart.numero}"></strong></td>
+                        <td th:text="${m.descricao}"></td>
+                        <td><span class="badge badge-blue" th:text="${m.tipo}"></span></td>
+                        <td th:text="${#temporals.format(m.dataEntrada,'dd/MM/yyyy')}" class="text-gray"></td>
+                        <td>
+                            <span class="badge badge-green" th:if="${m.concluida}">Concluída</span>
+                            <span class="badge badge-red"   th:if="${!m.concluida}">Em Curso</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

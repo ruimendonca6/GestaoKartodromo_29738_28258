@@ -5,30 +5,24 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
-import javax.swing.JTable;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -69,11 +63,10 @@ public class ManutencaoPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(UiStyle.BACKGROUND_COLOR);
 
-        JLabel header = new JLabel("Manutenção");
-        header.setFont(new Font("Segoe UI Emoji", Font.BOLD, 26));
-        header.setForeground(UiStyle.PRIMARY_RED);
-        header.setBorder(BorderFactory.createEmptyBorder(20, 24, 10, 0));
-        add(header, BorderLayout.NORTH);
+        add(
+                UiStyle.createPageTitle("Manutenção"),
+                BorderLayout.NORTH
+        );
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.setBackground(UiStyle.BACKGROUND_COLOR);

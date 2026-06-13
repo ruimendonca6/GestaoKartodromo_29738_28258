@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Utilizadores — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1>Utilizadores</h1>
+            <p>Gestão de contas do sistema</p>
+        </div>
+        <button class="btn btn-green" onclick="openModal('modal-criar')">+ Novo Utilizador</button>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+    <div th:if="${erro}"    class="alert alert-error"   th:text="${erro}"></div>
+
+    <div class="card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Username</th><th>Email</th><th>Perfil</th><th>Ações</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(utilizadores)}">
+                        <td colspan="4" style="text-align:center;color:var(--text-gray);padding:24px">Nenhum utilizador.</td>
+                    </tr>
+                    <tr th:each="u : ${utilizadores}">
+                        <td><strong th:text="${u.username}"></strong></td>
+                        <td th:text="${u.email}" class="text-gray"></td>
+                        <td>
+                            <span class="badge badge-red"   th:if="${u.admin}">ADMIN</span>
+                            <span class="badge badge-blue"  th:if="${u.funcionario}">FUNCIONÁRIO</span>
+                            <span class="badge badge-green" th:if="${u.cliente}">CLIENTE</span>
+                        </td>
+                        <td>
+                            <div class="flex gap-8">
+                                <button class="btn btn-blue btn-xs"
+                                        th:attr="data-username=${u.username},data-email=${u.email},data-role=${u.role}"
+                                        onclick="populateEditFromDataset(this,'modal-editar')">✎ Editar</button>
+                                <button class="btn btn-gray btn-xs"
+                                        th:attr="data-username=${u.username}"
+                                        onclick="openPassModal(this)">🔑 Password</button>
+                                <form th:id="'del-' + ${u.username}" method="post" action="/utilizadores/remover">
+                                    <input type="hidden" name="username" th:value="${u.username}"/>
+                                    <button type="button" class="btn btn-red btn-xs"
+                                            th:attr="data-form-id='del-' + ${u.username},data-msg='Remover utilizador ' + ${u.username} + '?'"
+                                            onclick="confirmDeleteEl(this)">🗑</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Criar -->
+<div class="modal-overlay" id="modal-criar">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-criar')">✕</button>
+        <h2>Novo Utilizador</h2>
+        <form method="post" action="/utilizadores/criar">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" required/>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email"/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" required/>
+                </div>
+                <div class="form-group">
+                    <label>Perfil</label>
+                    <select name="role">
+                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-green">Criar</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-criar')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal-overlay" id="modal-editar">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-editar')">✕</button>
+        <h2>Editar Utilizador</h2>
+        <form method="post" action="/utilizadores/atualizar">
+            <input type="hidden" name="username"/>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email"/>
+            </div>
+            <div class="form-group">
+                <label>Perfil</label>
+                <select name="role">
+                    <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-blue">Guardar</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-editar')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Password -->
+<div class="modal-overlay" id="modal-pass">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-pass')">✕</button>
+        <h2>Alterar Password</h2>
+        <form method="post" action="/utilizadores/alterarPassword">
+            <input type="hidden" name="username" id="pass-username"/>
+            <div class="form-group">
+                <label>Nova Password</label>
+                <input type="password" name="novaPassword" required/>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-blue">Alterar</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-pass')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+<script>
+function openPassModal(btn) {
+    document.getElementById('pass-username').value = btn.dataset.username;
+    openModal('modal-pass');
+}
+</script>
+</body>
+</html>

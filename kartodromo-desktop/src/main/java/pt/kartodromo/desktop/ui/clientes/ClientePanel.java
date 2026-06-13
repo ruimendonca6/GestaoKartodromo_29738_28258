@@ -71,13 +71,26 @@ public class ClientePanel extends JPanel {
     public ClientePanel() {
         setLayout(new BorderLayout(20, 20));
         setBackground(UiStyle.BACKGROUND_COLOR);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
-        add(UiStyle.createCard(buildForm()), BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout(0, 10));
+        topPanel.setOpaque(false);
+
+        topPanel.add(
+                UiStyle.createPageTitle("Clientes"),
+                BorderLayout.NORTH
+        );
+
+        topPanel.add(
+                UiStyle.createCard(buildForm()),
+                BorderLayout.CENTER
+        );
+
+        add(topPanel, BorderLayout.NORTH);
         add(UiStyle.createCard(buildTable()), BorderLayout.CENTER);
 
         refreshData();
-    }
+}
 
     private JPanel buildForm() {
         JButton criarButton =
