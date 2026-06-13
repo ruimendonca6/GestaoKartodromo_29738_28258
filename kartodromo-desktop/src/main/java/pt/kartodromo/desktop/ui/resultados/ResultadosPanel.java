@@ -11,7 +11,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -59,21 +58,19 @@ public class ResultadosPanel extends JPanel {
     private DefaultTableModel classificacaoModel;
 
     public ResultadosPanel() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 10));
         setBackground(UiStyle.BACKGROUND_COLOR);
-
-        JLabel header = new JLabel("Resultados");
-        header.setFont(new Font("Segoe UI Emoji", Font.BOLD, 26));
-        header.setForeground(UiStyle.PRIMARY_RED);
-        header.setBorder(BorderFactory.createEmptyBorder(20, 24, 10, 0));
-        add(header, BorderLayout.NORTH);
+        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.setBackground(UiStyle.BACKGROUND_COLOR);
+
         tabs.addTab("Registar Tempo", buildRegistarTab());
         tabs.addTab("Tempos dos Pilotos", buildTemposTab());
         tabs.addTab("Melhor Volta", buildMelhorVoltaTab());
         tabs.addTab("Classificação", buildClassificacaoTab());
+
+        add(UiStyle.createPageTitle("Histórico de Corridas"), BorderLayout.NORTH);
         add(tabs, BorderLayout.CENTER);
 
         loadData();

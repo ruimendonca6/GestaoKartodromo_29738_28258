@@ -11,7 +11,6 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -22,7 +21,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.border.CompoundBorder;
 
 import pt.kartodromo.core.bll.CategoriaKartService;
 import pt.kartodromo.core.bll.ClienteService;
@@ -134,9 +132,14 @@ public class DashboardPanel extends JPanel {
         shadow.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         JPanel card = new RoundedPanel(new BorderLayout(0, 0), 20, new Color(255, 255, 255, 240));
-        card.setBorder(new CompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 224, 230), 1, true),
-                BorderFactory.createEmptyBorder(18, 24, 14, 24)));
+        card.setBorder(
+            BorderFactory.createEmptyBorder(
+                    18,
+                    24,
+                    14,
+                    24
+            )   
+        );
 
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));

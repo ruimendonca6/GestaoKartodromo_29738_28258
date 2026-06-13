@@ -69,19 +69,21 @@ public class DisponibilidadePanel extends JPanel {
     private JLabel conflitosStatusLabel;
 
     public DisponibilidadePanel() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 10));
         setBackground(UiStyle.BACKGROUND_COLOR);
+        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.setFont(FONT_BOLD);
         tabs.setBackground(UiStyle.BACKGROUND_COLOR);
 
-        tabs.addTab("🟢 Períodos Livres", buildLivresTab());
-        tabs.addTab("🔴 Períodos Ocupados", buildOcupadosTab());
-        tabs.addTab("⚠️ Conflitos", buildConflitosTab());
+        tabs.addTab("◉ Períodos Livres", buildLivresTab());
+        tabs.addTab("■ Períodos Ocupados", buildOcupadosTab());
+        tabs.addTab("! Conflitos", buildConflitosTab());
 
         tabs.addChangeListener(e -> refreshActiveTab(tabs.getSelectedIndex()));
 
+        add(UiStyle.createPageTitle("Disponibilidade"), BorderLayout.NORTH);
         add(tabs, BorderLayout.CENTER);
     }
 
@@ -485,7 +487,7 @@ public class DisponibilidadePanel extends JPanel {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         bar.setBackground(UiStyle.BACKGROUND_COLOR);
 
-        JButton prev = new JButton("◀");
+        JButton prev = new JButton("<");
         prev.setFont(FONT_NORMAL);
         prev.addActionListener(prevAction);
 
@@ -493,7 +495,7 @@ public class DisponibilidadePanel extends JPanel {
         dateLabel.setFont(FONT_BOLD);
         dateLabel.setPreferredSize(new Dimension(120, 28));
 
-        JButton next = new JButton("▶");
+        JButton next = new JButton(">");
         next.setFont(FONT_NORMAL);
         next.addActionListener(nextAction);
 
@@ -647,10 +649,10 @@ public class DisponibilidadePanel extends JPanel {
         }
 
         if (count == 0) {
-            conflitosStatusLabel.setText("✅  Nenhum conflito de reservas encontrado");
+            conflitosStatusLabel.setText("[OK] Nenhum conflito de reservas encontrado");
             conflitosStatusLabel.setForeground(new Color(30, 140, 30));
         } else {
-            conflitosStatusLabel.setText("⚠️  " + count + " conflito(s) detectado(s)");
+            conflitosStatusLabel.setText("[AVISO] " + count + " conflito(s) detectado(s)");
             conflitosStatusLabel.setForeground(UiStyle.DELETE_RED);
         }
     }
