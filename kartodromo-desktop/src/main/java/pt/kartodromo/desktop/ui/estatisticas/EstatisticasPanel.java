@@ -87,19 +87,25 @@ public class EstatisticasPanel extends JPanel {
     private Map<String, BigDecimal> chartData = new LinkedHashMap<>();
 
     public EstatisticasPanel() {
-        setLayout(new BorderLayout(0, 0));
+        setLayout(new BorderLayout(0, 10));
         setBackground(UiStyle.BACKGROUND_COLOR);
+        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
-        add(buildPeriodBar(), BorderLayout.NORTH);
+        JPanel contentPanel = new JPanel(new BorderLayout(0, 12));
+        contentPanel.setBackground(UiStyle.BACKGROUND_COLOR);
+
+        contentPanel.add(buildPeriodBar(), BorderLayout.NORTH);
 
         JPanel center = new JPanel(new BorderLayout(0, 12));
         center.setBackground(UiStyle.BACKGROUND_COLOR);
-        center.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
         center.add(buildKpiRow(), BorderLayout.NORTH);
         center.add(buildDetailArea(), BorderLayout.CENTER);
 
-        add(center, BorderLayout.CENTER);
+        contentPanel.add(center, BorderLayout.CENTER);
+
+        add(UiStyle.createPageTitle("Estatísticas"), BorderLayout.NORTH);
+        add(contentPanel, BorderLayout.CENTER);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

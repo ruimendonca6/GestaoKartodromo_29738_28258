@@ -85,22 +85,23 @@ public class CalendarioPanel extends JPanel {
     private final javax.swing.JTabbedPane tabs = new javax.swing.JTabbedPane();
 
     public CalendarioPanel() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 10));
         setBackground(UiStyle.BACKGROUND_COLOR);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
         tabContents[0] = buildDiariaTab();
         tabContents[1] = buildSemanalTab();
         tabContents[2] = buildMensalTab();
         tabContents[3] = buildPorPistaTab();
 
-        tabs.addTab("📅 Diária", tabContents[0]);
-        tabs.addTab("📆 Semanal", tabContents[1]);
-        tabs.addTab("🗓 Mensal", tabContents[2]);
-        tabs.addTab("🏁 Por Pista", tabContents[3]);
+        tabs.addTab("Diária", tabContents[0]);
+        tabs.addTab("Semanal", tabContents[1]);
+        tabs.addTab("Mensal", tabContents[2]);
+        tabs.addTab("Por Pista", tabContents[3]);
 
         tabs.addChangeListener(e -> refreshCurrentView());
 
+        add(UiStyle.createPageTitle("Calendário"), BorderLayout.NORTH);
         add(tabs, BorderLayout.CENTER);
     }
 

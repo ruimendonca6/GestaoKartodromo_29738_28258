@@ -43,14 +43,24 @@ public class ReservaPanel extends JPanel {
     private final KartService kartService = new KartService();
     private final ReservaService reservaService = new ReservaService();
 
+    private final Runnable abrirPistasAction;
+
     private Long reservaSelecionadaId = null;
 
-    private final JTextField pistaField = new JTextField("Pista Completa");
-    private final JTextField inicioField = new JTextField("2030-01-01 10:00");
-    private final JTextField fimField = new JTextField("2030-01-01 10:30");
+    private String pistaSelecionada = "Pista Completa";
+
+    private final JLabel pistaSelecionadaLabel =
+            new JLabel(pistaSelecionada);
+
+    private final JTextField inicioField =
+            new JTextField(LocalDateTime.now().format(DATE_TIME_FORMAT));
+
+    private final JTextField fimField =
+            new JTextField(LocalDateTime.now().plusMinutes(30).format(DATE_TIME_FORMAT));
 
     private final JComboBox<Cliente> clienteCombo = new JComboBox<>();
     private final JComboBox<Kart> kartCombo = new JComboBox<>();
+
     private final JComboBox<ReservaEstado> estadoCombo =
             new JComboBox<>(ReservaEstado.values());
 
@@ -73,58 +83,123 @@ public class ReservaPanel extends JPanel {
                 }
             };
 
-    private final JTable reservasTable = new JTable(reservasTableModel);
+    private final JTable reservasTable =
+            new JTable(reservasTableModel);
 
     public ReservaPanel() {
+        this(null);
+    }
+
+    public ReservaPanel(Runnable abrirPistasAction) {
+        this.abrirPistasAction = abrirPistasAction;
+
         setLayout(new BorderLayout(20, 20));
         setBackground(UiStyle.BACKGROUND_COLOR);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
         configureComboRenderers();
 
-        add(UiStyle.createCard(buildForm()), BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout(0, 10));
+        topPanel.setOpaque(false);
+
+        topPanel.add(
+                UiStyle.createPageTitle("Reservas"),
+                BorderLayout.NORTH
+        );
+
+        topPanel.add(
+                UiStyle.createCard(buildForm()),
+                BorderLayout.CENTER
+        );
+
+        add(topPanel, BorderLayout.NORTH);
         add(UiStyle.createCard(buildTable()), BorderLayout.CENTER);
 
         refreshData();
-    }
+        }
 
     private JPanel buildForm() {
-        JButton criarButton = UiStyle.createActionButton("+ Nova", UiStyle.CREATE_GREEN);
-        JButton atualizarButton = UiStyle.createActionButton("✎ Atualizar", UiStyle.UPDATE_BLUE);
-        JButton removerButton = UiStyle.createActionButton("🗑 Remover", UiStyle.DELETE_RED);
-        JButton limparButton = UiStyle.createActionButton("↺ Limpar", UiStyle.CLEAR_GRAY);
+        JButton criarButton =
+                UiStyle.createActionButton("+ Nova", UiStyle.CREATE_GREEN);
+
+        JButton atualizarButton =
+                UiStyle.createActionButton("✎ Atualizar", UiStyle.UPDATE_BLUE);
+
+        JButton removerButton =
+                UiStyle.createActionButton("🗑 Remover", UiStyle.DELETE_RED);
+
+        JButton limparButton =
+                UiStyle.createActionButton("↺ Limpar", UiStyle.CLEAR_GRAY);
 
         criarButton.addActionListener(e -> criarReserva());
         atualizarButton.addActionListener(e -> atualizarReserva());
         removerButton.addActionListener(e -> removerReserva());
         limparButton.addActionListener(e -> limparFormulario());
 
-        JPanel fieldsPanel = new JPanel(new GridBagLayout());
-        fieldsPanel.setOpaque(false);
-        fieldsPanel.setBorder(BorderFactory.createTitledBorder("📋 Dados da Reserva"));
+        JPanel fieldsPanel =
+                new JPanel(new GridBagLayout());
 
-        GridBagConstraints gbc = createGbc();
+        fieldsPanel.setOpaque(false);
+        fieldsPanel.setBorder(
+                BorderFactory.createTitledBorder("📋 Dados da Reserva")
+        );
+
+        GridBagConstraints gbc =
+                createGbc();
 
         addFormRow(fieldsPanel, gbc, 0, "Cliente", clienteCombo);
         addFormRow(fieldsPanel, gbc, 1, "Kart", kartCombo);
-        addFormRow(fieldsPanel, gbc, 2, "Pista", pistaField);
+        addFormRow(fieldsPanel, gbc, 2, "Pista", buildPistaSelector());
         addFormRow(fieldsPanel, gbc, 3, "Início (yyyy-MM-dd HH:mm)", inicioField);
         addFormRow(fieldsPanel, gbc, 4, "Fim (yyyy-MM-dd HH:mm)", fimField);
         addFormRow(fieldsPanel, gbc, 5, "Estado", estadoCombo);
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        JPanel actionsPanel =
+                new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+
         actionsPanel.setOpaque(false);
         actionsPanel.add(criarButton);
         actionsPanel.add(atualizarButton);
         actionsPanel.add(removerButton);
         actionsPanel.add(limparButton);
 
-        JPanel form = new JPanel(new BorderLayout(10, 10));
+        JPanel form =
+                new JPanel(new BorderLayout(10, 10));
+
         form.setOpaque(false);
         form.add(fieldsPanel, BorderLayout.CENTER);
         form.add(actionsPanel, BorderLayout.SOUTH);
 
         return form;
+    }
+
+    private JPanel buildPistaSelector() {
+        JButton selecionarPistaButton =
+                UiStyle.createActionButton(
+                        "Selecionar pista",
+                        UiStyle.PRIMARY_RED
+                );
+
+        selecionarPistaButton.addActionListener(e -> {
+            if (abrirPistasAction != null) {
+                abrirPistasAction.run();
+            }
+        });
+
+        pistaSelecionadaLabel.setFont(
+                new Font("Segoe UI", Font.BOLD, 13)
+        );
+
+        pistaSelecionadaLabel.setForeground(UiStyle.BLACK);
+
+        JPanel panel =
+                new JPanel(new BorderLayout(12, 0));
+
+        panel.setOpaque(false);
+        panel.add(selecionarPistaButton, BorderLayout.WEST);
+        panel.add(pistaSelecionadaLabel, BorderLayout.CENTER);
+
+        return panel;
     }
 
     private JScrollPane buildTable() {
@@ -137,17 +212,26 @@ public class ReservaPanel extends JPanel {
             }
         });
 
-        JScrollPane scroll = new JScrollPane(reservasTable);
-        scroll.setBorder(BorderFactory.createTitledBorder("Reservas"));
+        JScrollPane scroll =
+                new JScrollPane(reservasTable);
+
+        scroll.setBorder(
+                BorderFactory.createTitledBorder("Reservas")
+        );
 
         return scroll;
     }
 
     private void criarReserva() {
         try {
-            Cliente cliente = (Cliente) clienteCombo.getSelectedItem();
-            Kart kart = (Kart) kartCombo.getSelectedItem();
-            ReservaEstado estado = (ReservaEstado) estadoCombo.getSelectedItem();
+            Cliente cliente =
+                    (Cliente) clienteCombo.getSelectedItem();
+
+            Kart kart =
+                    (Kart) kartCombo.getSelectedItem();
+
+            ReservaEstado estado =
+                    (ReservaEstado) estadoCombo.getSelectedItem();
 
             if (cliente == null || kart == null || estado == null) {
                 showError("Selecione cliente, kart e estado.");
@@ -158,9 +242,15 @@ public class ReservaPanel extends JPanel {
                     reservaService.criarReserva(
                             cliente.getId(),
                             kart.getId(),
-                            pistaField.getText().trim(),
-                            LocalDateTime.parse(inicioField.getText().trim(), DATE_TIME_FORMAT),
-                            LocalDateTime.parse(fimField.getText().trim(), DATE_TIME_FORMAT),
+                            pistaSelecionada,
+                            LocalDateTime.parse(
+                                    inicioField.getText().trim(),
+                                    DATE_TIME_FORMAT
+                            ),
+                            LocalDateTime.parse(
+                                    fimField.getText().trim(),
+                                    DATE_TIME_FORMAT
+                            ),
                             estado
                     );
 
@@ -183,9 +273,14 @@ public class ReservaPanel extends JPanel {
         }
 
         try {
-            Cliente cliente = (Cliente) clienteCombo.getSelectedItem();
-            Kart kart = (Kart) kartCombo.getSelectedItem();
-            ReservaEstado estado = (ReservaEstado) estadoCombo.getSelectedItem();
+            Cliente cliente =
+                    (Cliente) clienteCombo.getSelectedItem();
+
+            Kart kart =
+                    (Kart) kartCombo.getSelectedItem();
+
+            ReservaEstado estado =
+                    (ReservaEstado) estadoCombo.getSelectedItem();
 
             if (cliente == null || kart == null || estado == null) {
                 showError("Selecione cliente, kart e estado.");
@@ -196,9 +291,15 @@ public class ReservaPanel extends JPanel {
                     reservaSelecionadaId,
                     cliente.getId(),
                     kart.getId(),
-                    pistaField.getText().trim(),
-                    LocalDateTime.parse(inicioField.getText().trim(), DATE_TIME_FORMAT),
-                    LocalDateTime.parse(fimField.getText().trim(), DATE_TIME_FORMAT),
+                    pistaSelecionada,
+                    LocalDateTime.parse(
+                            inicioField.getText().trim(),
+                            DATE_TIME_FORMAT
+                    ),
+                    LocalDateTime.parse(
+                            fimField.getText().trim(),
+                            DATE_TIME_FORMAT
+                    ),
                     estado
             );
 
@@ -247,18 +348,21 @@ public class ReservaPanel extends JPanel {
     }
 
     private void carregarReservaSelecionada() {
-        int selectedRow = reservasTable.getSelectedRow();
+        int selectedRow =
+                reservasTable.getSelectedRow();
 
         if (selectedRow == -1) {
             return;
         }
 
-        int modelRow = reservasTable.convertRowIndexToModel(selectedRow);
+        int modelRow =
+                reservasTable.convertRowIndexToModel(selectedRow);
 
         reservaSelecionadaId =
                 (Long) reservasTableModel.getValueAt(modelRow, 0);
 
-        Reserva reserva = encontrarReservaPorId(reservaSelecionadaId);
+        Reserva reserva =
+                encontrarReservaPorId(reservaSelecionadaId);
 
         if (reserva == null) {
             return;
@@ -272,10 +376,29 @@ public class ReservaPanel extends JPanel {
             selecionarKartPorId(reserva.getKart().getId());
         }
 
-        pistaField.setText(reserva.getPistaNome());
-        inicioField.setText(reserva.getDataHoraInicio().format(DATE_TIME_FORMAT));
-        fimField.setText(reserva.getDataHoraFim().format(DATE_TIME_FORMAT));
-        estadoCombo.setSelectedItem(reserva.getEstado());
+        setPistaSelecionada(reserva.getPistaNome());
+
+        inicioField.setText(
+                reserva.getDataHoraInicio().format(DATE_TIME_FORMAT)
+        );
+
+        fimField.setText(
+                reserva.getDataHoraFim().format(DATE_TIME_FORMAT)
+        );
+
+        estadoCombo.setSelectedItem(
+                reserva.getEstado()
+        );
+    }
+
+    public void setPistaSelecionada(String pista) {
+        if (pista == null || pista.isBlank()) {
+            pistaSelecionada = "Pista Completa";
+        } else {
+            pistaSelecionada = pista;
+        }
+
+        pistaSelecionadaLabel.setText(pistaSelecionada);
     }
 
     private Reserva encontrarReservaPorId(Long id) {
@@ -290,7 +413,8 @@ public class ReservaPanel extends JPanel {
 
     private void selecionarClientePorId(Long id) {
         for (int i = 0; i < clienteCombo.getItemCount(); i++) {
-            Cliente cliente = clienteCombo.getItemAt(i);
+            Cliente cliente =
+                    clienteCombo.getItemAt(i);
 
             if (cliente.getId().equals(id)) {
                 clienteCombo.setSelectedItem(cliente);
@@ -301,7 +425,8 @@ public class ReservaPanel extends JPanel {
 
     private void selecionarKartPorId(Long id) {
         for (int i = 0; i < kartCombo.getItemCount(); i++) {
-            Kart kart = kartCombo.getItemAt(i);
+            Kart kart =
+                    kartCombo.getItemAt(i);
 
             if (kart.getId().equals(id)) {
                 kartCombo.setSelectedItem(kart);
@@ -321,9 +446,16 @@ public class ReservaPanel extends JPanel {
             kartCombo.setSelectedIndex(0);
         }
 
-        pistaField.setText("Pista Completa");
-        inicioField.setText("2030-01-01 10:00");
-        fimField.setText("2030-01-01 10:30");
+        setPistaSelecionada("Pista Completa");
+
+        inicioField.setText(
+                LocalDateTime.now().format(DATE_TIME_FORMAT)
+        );
+
+        fimField.setText(
+                LocalDateTime.now().plusMinutes(30).format(DATE_TIME_FORMAT)
+        );
+
         estadoCombo.setSelectedItem(ReservaEstado.PENDENTE);
 
         reservasTable.clearSelection();
@@ -374,62 +506,76 @@ public class ReservaPanel extends JPanel {
     }
 
     private void configureComboRenderers() {
-        clienteCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(
-                    JList<?> list,
-                    Object value,
-                    int index,
-                    boolean isSelected,
-                    boolean cellHasFocus) {
+        clienteCombo.setRenderer(
+                new DefaultListCellRenderer() {
 
-                String text = "";
+                    @Override
+                    public Component getListCellRendererComponent(
+                            JList<?> list,
+                            Object value,
+                            int index,
+                            boolean isSelected,
+                            boolean cellHasFocus) {
 
-                if (value instanceof Cliente cliente) {
-                    text = cliente.getNome();
+                        String text = "";
+
+                        if (value instanceof Cliente cliente) {
+                            text = cliente.getNome();
+                        }
+
+                        return super.getListCellRendererComponent(
+                                list,
+                                text,
+                                index,
+                                isSelected,
+                                cellHasFocus
+                        );
+                    }
                 }
+        );
 
-                return super.getListCellRendererComponent(
-                        list,
-                        text,
-                        index,
-                        isSelected,
-                        cellHasFocus
-                );
-            }
-        });
+        kartCombo.setRenderer(
+                new DefaultListCellRenderer() {
 
-        kartCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(
-                    JList<?> list,
-                    Object value,
-                    int index,
-                    boolean isSelected,
-                    boolean cellHasFocus) {
+                    @Override
+                    public Component getListCellRendererComponent(
+                            JList<?> list,
+                            Object value,
+                            int index,
+                            boolean isSelected,
+                            boolean cellHasFocus) {
 
-                String text = "";
+                        String text = "";
 
-                if (value instanceof Kart kart) {
-                    text = "Kart #" + kart.getNumero();
+                        if (value instanceof Kart kart) {
+                            text = "Kart #" + kart.getNumero();
+                        }
+
+                        return super.getListCellRendererComponent(
+                                list,
+                                text,
+                                index,
+                                isSelected,
+                                cellHasFocus
+                        );
+                    }
                 }
-
-                return super.getListCellRendererComponent(
-                        list,
-                        text,
-                        index,
-                        isSelected,
-                        cellHasFocus
-                );
-            }
-        });
+        );
     }
 
     private GridBagConstraints createGbc() {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(7, 8, 7, 8);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.insets =
+                new Insets(7, 8, 7, 8);
+
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        gbc.weightx =
+                1;
+
         return gbc;
     }
 
@@ -445,8 +591,13 @@ public class ReservaPanel extends JPanel {
         gbc.weightx = 0;
         gbc.gridwidth = 1;
 
-        JLabel labelComponent = new JLabel(label);
-        labelComponent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        JLabel labelComponent =
+                new JLabel(label);
+
+        labelComponent.setFont(
+                new Font("Segoe UI", Font.PLAIN, 13)
+        );
+
         panel.add(labelComponent, gbc);
 
         gbc.gridx = 1;
@@ -454,15 +605,28 @@ public class ReservaPanel extends JPanel {
         gbc.weightx = 1;
         gbc.gridwidth = 1;
 
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        field.setFont(
+                new Font("Segoe UI", Font.PLAIN, 13)
+        );
+
         panel.add(field, gbc);
     }
 
     private void showInfo(String message) {
-        JOptionPane.showMessageDialog(this, message, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                "Sucesso",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Erro", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                "Erro",
+                JOptionPane.ERROR_MESSAGE
+        );
     }
 }
