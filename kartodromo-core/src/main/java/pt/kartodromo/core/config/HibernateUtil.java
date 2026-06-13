@@ -9,7 +9,10 @@ import pt.kartodromo.core.model.CategoriaKart;
 import pt.kartodromo.core.model.Cliente;
 import pt.kartodromo.core.model.Corrida;
 import pt.kartodromo.core.model.Kart;
+import pt.kartodromo.core.model.Manutencao;
+import pt.kartodromo.core.model.Pista;
 import pt.kartodromo.core.model.Reserva;
+import pt.kartodromo.core.model.Resultado;
 
 public final class HibernateUtil {
 
@@ -31,7 +34,10 @@ public final class HibernateUtil {
                     .addAnnotatedClass(CategoriaKart.class)
                     .addAnnotatedClass(Corrida.class)
                     .addAnnotatedClass(Kart.class)
-                    .addAnnotatedClass(Reserva.class);
+                    .addAnnotatedClass(Reserva.class)
+                    .addAnnotatedClass(Pista.class)
+                    .addAnnotatedClass(Manutencao.class)
+                    .addAnnotatedClass(Resultado.class);
 
             Metadata metadata = sources.getMetadataBuilder().build();
             return metadata.getSessionFactoryBuilder().build();

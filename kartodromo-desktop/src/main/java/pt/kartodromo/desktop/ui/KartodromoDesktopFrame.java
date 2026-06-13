@@ -20,6 +20,10 @@ import pt.kartodromo.desktop.ui.reservas.ReservaPanel;
 import pt.kartodromo.desktop.ui.calendario.CalendarioPanel;
 import pt.kartodromo.desktop.ui.disponibilidade.DisponibilidadePanel;
 import pt.kartodromo.desktop.ui.estatisticas.EstatisticasPanel;
+import pt.kartodromo.desktop.ui.manutencao.ManutencaoPanel;
+import pt.kartodromo.desktop.ui.notificacoes.NotificacaoPanel;
+import pt.kartodromo.desktop.ui.relatorios.RelatoriosPanel;
+import pt.kartodromo.desktop.ui.resultados.ResultadosPanel;
 import pt.kartodromo.desktop.ui.utilizadores.UtilizadoresPanel;
 
 public class KartodromoDesktopFrame extends JFrame {
@@ -38,6 +42,10 @@ public class KartodromoDesktopFrame extends JFrame {
     private final CalendarioPanel calendarioPanel;
     private final DisponibilidadePanel disponibilidadePanel;
     private final EstatisticasPanel estatisticasPanel;
+    private final ManutencaoPanel manutencaoPanel;
+    private final ResultadosPanel resultadosPanel;
+    private final NotificacaoPanel notificacaoPanel;
+    private final RelatoriosPanel relatoriosPanel;
 
     public KartodromoDesktopFrame(AuthUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
@@ -66,6 +74,10 @@ public class KartodromoDesktopFrame extends JFrame {
         calendarioPanel = new CalendarioPanel();
         disponibilidadePanel = new DisponibilidadePanel();
         estatisticasPanel    = new EstatisticasPanel();
+        manutencaoPanel      = new ManutencaoPanel();
+        resultadosPanel      = new ResultadosPanel();
+        notificacaoPanel     = new NotificacaoPanel();
+        relatoriosPanel      = new RelatoriosPanel();
 
         perfilPanel =
                 new PerfilPanel(
@@ -101,7 +113,10 @@ public class KartodromoDesktopFrame extends JFrame {
             tabs.addTab(UiLabels.RESERVAS, reservaPanel);
             tabs.addTab(UiLabels.CALENDARIO, calendarioPanel);
             tabs.addTab(UiLabels.DISPONIBILIDADE, disponibilidadePanel);
+            tabs.addTab(UiLabels.MANUTENCAO, manutencaoPanel);
+            tabs.addTab(UiLabels.RESULTADOS, resultadosPanel);
             tabs.addTab(UiLabels.ESTATISTICAS, estatisticasPanel);
+            tabs.addTab(UiLabels.NOTIFICACOES, notificacaoPanel);
             tabs.addTab(UiLabels.PERFIL, perfilPanel);
             return;
         }
@@ -115,7 +130,11 @@ public class KartodromoDesktopFrame extends JFrame {
             tabs.addTab(UiLabels.PISTAS, pistasPanel);
             tabs.addTab(UiLabels.CALENDARIO, calendarioPanel);
             tabs.addTab(UiLabels.DISPONIBILIDADE, disponibilidadePanel);
+            tabs.addTab(UiLabels.MANUTENCAO, manutencaoPanel);
+            tabs.addTab(UiLabels.RESULTADOS, resultadosPanel);
             tabs.addTab(UiLabels.ESTATISTICAS, estatisticasPanel);
+            tabs.addTab(UiLabels.NOTIFICACOES, notificacaoPanel);
+            tabs.addTab(UiLabels.RELATORIOS, relatoriosPanel);
             tabs.addTab(UiLabels.UTILIZADORES, utilizadoresPanel);
             tabs.addTab(UiLabels.PERFIL, perfilPanel);
         }
@@ -138,7 +157,10 @@ public class KartodromoDesktopFrame extends JFrame {
 
         if (!authenticatedUser.isCliente()) {
             disponibilidadePanel.refreshData();
+            manutencaoPanel.refreshData();
+            resultadosPanel.refreshData();
             estatisticasPanel.refreshData();
+            notificacaoPanel.refreshData();
         }
 
         if (authenticatedUser.isAdmin()) {
