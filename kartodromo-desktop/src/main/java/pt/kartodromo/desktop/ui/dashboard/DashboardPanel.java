@@ -30,6 +30,7 @@ import pt.kartodromo.core.bll.ReservaService;
 import pt.kartodromo.core.model.Corrida;
 import pt.kartodromo.core.model.Reserva;
 import pt.kartodromo.core.model.enums.ReservaEstado;
+import pt.kartodromo.desktop.ui.auth.AuthUser;
 
 public class DashboardPanel extends JPanel {
 
@@ -44,6 +45,7 @@ public class DashboardPanel extends JPanel {
     private final KartService kartService = new KartService();
     private final CorridaService corridaService = new CorridaService();
     private final ReservaService reservaService = new ReservaService();
+    private final AuthUser authenticatedUser;
 
     // KPI value labels
     private final JLabel clientesValue = new JLabel("0", SwingConstants.CENTER);
@@ -68,6 +70,12 @@ public class DashboardPanel extends JPanel {
     private final JLabel todayCanceladas = new JLabel("—");
 
     public DashboardPanel() {
+        this(null);
+    }
+
+    public DashboardPanel(AuthUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+
         setLayout(new BorderLayout());
 
         BackgroundPanel backgroundPanel = new BackgroundPanel(BACKGROUND_IMAGE_PATH);
@@ -224,10 +232,34 @@ public class DashboardPanel extends JPanel {
         List<Reserva> reservas = reservaService.listarReservas();
         List<Corrida> corridas = corridaService.listarCorridas();
 
+        if (authenticatedUser != null && authenticatedUser.isCliente()) {
+            reservas = reservas.stream()
+                    .filter(r ->
+                            r.getCliente() != null
+                                    && r.getCliente().getEmail() != null
+                                    && r.getCliente().getEmail().equalsIgnoreCase(authenticatedUser.getEmail())
+                    )
+                    .toList();
+
+            corridas = corridas.stream()
+                    .filter(c ->
+                            c.getCliente() != null
+                                    && c.getCliente().getEmail() != null
+                                    && c.getCliente().getEmail().equalsIgnoreCase(authenticatedUser.getEmail())
+                    )
+                    .toList();
+        }
+
         // KPI values
-        clientesValue.setText(String.valueOf(clienteService.listarClientes().size()));
-        categoriasValue.setText(String.valueOf(categoriaService.listarCategorias().size()));
-        kartsValue.setText(String.valueOf(kartService.listarKarts().size()));
+        if (authenticatedUser != null && authenticatedUser.isCliente()) {
+            clientesValue.setText("1");
+            categoriasValue.setText("-");
+            kartsValue.setText("-");
+        } else {
+            clientesValue.setText(String.valueOf(clienteService.listarClientes().size()));
+            categoriasValue.setText(String.valueOf(categoriaService.listarCategorias().size()));
+            kartsValue.setText(String.valueOf(kartService.listarKarts().size()));
+    }
         corridasValue.setText(String.valueOf(corridas.size()));
         reservasValue.setText(String.valueOf(reservas.size()));
 

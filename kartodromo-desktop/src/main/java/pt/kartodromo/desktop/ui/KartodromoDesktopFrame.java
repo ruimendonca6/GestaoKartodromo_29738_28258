@@ -3,6 +3,7 @@ package pt.kartodromo.desktop.ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
@@ -67,22 +68,35 @@ public class KartodromoDesktopFrame extends JFrame {
                         + authenticatedUser.getRole()
         );
 
+        setIconImage(
+            new ImageIcon(
+                getClass().getResource("/images/logo.png")
+            ).getImage()
+        );
+
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1300, 800);
         setMinimumSize(new Dimension(1000, 650));
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        dashboardPanel = new DashboardPanel();
+        dashboardPanel =
+            new DashboardPanel(authenticatedUser);
 
         corridaPanel =
-                new CorridaPanel(this::abrirPistasParaCorridas);
+        new CorridaPanel(this::abrirPistasParaCorridas);
 
         reservaPanel =
-                new ReservaPanel(this::abrirPistasParaReservas);
+            new ReservaPanel(
+                    this::abrirPistasParaReservas,
+                    authenticatedUser
+            );
 
         pistasPanel =
-                new PistasPanel(this::selecionarPista);
+            new PistasPanel(
+                    this::selecionarPista,
+                    !authenticatedUser.isCliente()
+            );
 
         clientePanel = new ClientePanel();
         categoriaPanel = new CategoriaPanel();
