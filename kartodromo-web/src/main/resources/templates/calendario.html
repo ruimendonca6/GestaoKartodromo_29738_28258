@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Calendário — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1>Calendário</h1>
+            <p>Vista diária de reservas e corridas</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <a th:href="@{/calendario(data=${#temporals.format(anterior,'yyyy-MM-dd')})}" class="btn btn-gray">◀</a>
+            <form method="get" action="/calendario" style="display:flex;gap:8px">
+                <input type="date" name="data" th:value="${#temporals.format(data,'yyyy-MM-dd')}" onchange="this.form.submit()"/>
+            </form>
+            <a th:href="@{/calendario(data=${#temporals.format(proximo,'yyyy-MM-dd')})}" class="btn btn-gray">▶</a>
+            <a href="/calendario" class="btn btn-blue">Hoje</a>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <!-- Reservas do dia -->
+        <div class="card">
+            <div class="card-title">📅 Reservas — <span th:text="${#temporals.format(data,'dd/MM/yyyy')}"></span></div>
+            <div th:if="${#lists.isEmpty(reservas)}" style="text-align:center;color:var(--text-gray);padding:32px">
+                Sem reservas neste dia.
+            </div>
+            <div th:each="r : ${reservas}" style="border-bottom:1px solid var(--border,#333);padding:12px 0;display:flex;gap:12px;align-items:center">
+                <div style="background:var(--blue);color:#fff;border-radius:6px;padding:4px 10px;font-size:13px;white-space:nowrap"
+                     th:text="${#temporals.format(r.dataHoraInicio,'HH:mm')} + '–' + ${#temporals.format(r.dataHoraFim,'HH:mm')}"></div>
+                <div>
+                    <div style="font-weight:600" th:text="${r.cliente.nome}"></div>
+                    <div style="font-size:12px;color:var(--text-gray)" th:text="'Kart #' + ${r.kart.numero} + ' · ' + ${r.pistaNome}"></div>
+                </div>
+                <span class="badge badge-green"  th:if="${r.estado.name() == 'CONFIRMADA'}" style="margin-left:auto">✓</span>
+                <span class="badge badge-blue"   th:if="${r.estado.name() == 'PENDENTE'}"   style="margin-left:auto">⏳</span>
+                <span class="badge badge-red"    th:if="${r.estado.name() == 'CANCELADA'}"  style="margin-left:auto">✕</span>
+            </div>
+        </div>
+
+        <!-- Corridas do dia -->
+        <div class="card">
+            <div class="card-title">🏁 Corridas — <span th:text="${#temporals.format(data,'dd/MM/yyyy')}"></span></div>
+            <div th:if="${#lists.isEmpty(corridas)}" style="text-align:center;color:var(--text-gray);padding:32px">
+                Sem corridas neste dia.
+            </div>
+            <div th:each="c : ${corridas}" style="border-bottom:1px solid var(--border,#333);padding:12px 0;display:flex;gap:12px;align-items:center">
+                <div style="background:var(--green,#388e3c);color:#fff;border-radius:6px;padding:4px 10px;font-size:13px;white-space:nowrap"
+                     th:text="${#temporals.format(c.dataHoraInicio,'HH:mm')}"></div>
+                <div>
+                    <div style="font-weight:600" th:text="${c.layoutNome}"></div>
+                    <div style="font-size:12px;color:var(--text-gray)"
+                         th:text="${c.categoria.descricao} + ' · ' + ${c.duracaoMinutos} + ' min · ' + ${c.vagasMaximas} + ' vagas'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

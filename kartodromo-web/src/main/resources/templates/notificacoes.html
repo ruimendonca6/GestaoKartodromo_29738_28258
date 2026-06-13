@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Notificações — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header">
+        <h1>Notificações</h1>
+        <p>Alertas e avisos do sistema</p>
+    </div>
+
+    <div th:if="${#lists.isEmpty(notificacoes)}" class="card" style="text-align:center;padding:48px;color:var(--text-gray)">
+        <div style="font-size:48px;margin-bottom:16px">🔔</div>
+        <p>Sem notificações de momento.</p>
+    </div>
+
+    <div th:each="n : ${notificacoes}" class="card" style="margin-bottom:12px;border-left:4px solid"
+         th:style="${n.tipo.name() == 'KART_MANUTENCAO'} ? 'border-left:4px solid var(--red)' :
+                   (${n.tipo.name() == 'RESERVA_PROXIMA'} ? 'border-left:4px solid var(--blue)' :
+                   'border-left:4px solid var(--green)')">
+        <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:28px"
+                  th:text="${n.tipo.name() == 'KART_MANUTENCAO'} ? '🔧' :
+                            (${n.tipo.name() == 'RESERVA_PROXIMA'} ? '📅' : '🏁')"></span>
+            <div style="flex:1">
+                <div style="font-weight:600;font-size:15px" th:text="${n.titulo}"></div>
+                <div style="color:var(--text-gray);font-size:13px;margin-top:2px" th:text="${n.detalhe}"></div>
+            </div>
+            <span th:if="${!#strings.isEmpty(n.tempo)}" class="badge badge-blue" th:text="${n.tempo}"></span>
+            <span class="badge"
+                  th:classappend="${n.tipo.name() == 'KART_MANUTENCAO'} ? ' badge-red' :
+                                  (${n.tipo.name() == 'RESERVA_PROXIMA'} ? ' badge-blue' : ' badge-green')"
+                  th:text="${n.tipo.name() == 'KART_MANUTENCAO'} ? 'Manutenção' :
+                            (${n.tipo.name() == 'RESERVA_PROXIMA'} ? 'Reserva' : 'Corrida')"></span>
+        </div>
+    </div>
+
+    <div style="margin-top:16px;text-align:right">
+        <a href="/notificacoes" class="btn btn-gray">🔄 Atualizar</a>
+    </div>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

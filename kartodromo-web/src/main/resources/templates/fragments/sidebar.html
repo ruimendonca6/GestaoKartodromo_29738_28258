@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="sidebar" th:fragment="sidebar">
+    <a class="sidebar-brand" href="/dashboard">
+        🏁 Kartódromo
+        <span th:text="'Olá, ' + ${authUser.username}"></span>
+    </a>
+
+    <div th:if="${authUser.admin or authUser.funcionario}">
+        <div class="sidebar-section">Gestão</div>
+        <a href="/dashboard"   th:classappend="${activePage=='dashboard'}   ? ' active'">📊 Dashboard</a>
+        <a href="/clientes"    th:classappend="${activePage=='clientes'}    ? ' active'">👥 Clientes</a>
+        <a href="/categorias"  th:classappend="${activePage=='categorias'}  ? ' active'">🏷 Categorias</a>
+        <a href="/karts"       th:classappend="${activePage=='karts'}       ? ' active'">🏎 Karts</a>
+        <a href="/corridas"    th:classappend="${activePage=='corridas'}    ? ' active'">🏁 Corridas</a>
+        <a href="/reservas"    th:classappend="${activePage=='reservas'}    ? ' active'">📅 Reservas</a>
+        <a href="/pistas"      th:classappend="${activePage=='pistas'}      ? ' active'">🗺 Pistas</a>
+
+        <div class="sidebar-section">Operações</div>
+        <a href="/manutencao"      th:classappend="${activePage=='manutencao'}      ? ' active'">🔧 Manutenção</a>
+        <a href="/resultados"      th:classappend="${activePage=='resultados'}      ? ' active'">🏆 Resultados</a>
+        <a href="/disponibilidade" th:classappend="${activePage=='disponibilidade'} ? ' active'">📋 Disponibilidade</a>
+        <a href="/calendario"      th:classappend="${activePage=='calendario'}      ? ' active'">📆 Calendário</a>
+        <a href="/notificacoes"    th:classappend="${activePage=='notificacoes'}    ? ' active'">🔔 Notificações</a>
+
+        <div th:if="${authUser.admin}">
+            <div class="sidebar-section">Administração</div>
+            <a href="/utilizadores"  th:classappend="${activePage=='utilizadores'}  ? ' active'">👤 Utilizadores</a>
+            <a href="/estatisticas"  th:classappend="${activePage=='estatisticas'}  ? ' active'">📈 Estatísticas</a>
+            <a href="/relatorios"    th:classappend="${activePage=='relatorios'}    ? ' active'">📄 Relatórios</a>
+        </div>
+    </div>
+
+    <div th:if="${authUser.cliente}">
+        <div class="sidebar-section">Menu</div>
+        <a href="/dashboard"    th:classappend="${activePage=='dashboard'}  ? ' active'">📊 Dashboard</a>
+        <a href="/pistas"       th:classappend="${activePage=='pistas'}     ? ' active'">🗺 Pistas</a>
+        <a href="/reservas"     th:classappend="${activePage=='reservas'}   ? ' active'">📅 Reservas</a>
+        <a href="/notificacoes" th:classappend="${activePage=='notificacoes'} ? ' active'">🔔 Notificações</a>
+    </div>
+
+    <div class="sidebar-section">Conta</div>
+    <a href="/perfil" th:classappend="${activePage=='perfil'} ? ' active'">⚙ Perfil</a>
+
+    <div class="sidebar-footer">
+        <div th:text="${authUser.email}" style="margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px"></div>
+        <a href="/logout">⬅ Sair</a>
+    </div>
+</nav>
+</body>
+</html>

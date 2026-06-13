@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Estatísticas — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1>Estatísticas</h1>
+            <p th:text="'De ' + ${#temporals.format(inicio,'dd/MM/yyyy')} + ' a ' + ${#temporals.format(fim,'dd/MM/yyyy')}"></p>
+        </div>
+        <div style="display:flex;gap:8px">
+            <a th:href="@{/estatisticas(periodo='semana')}"
+               th:classappend="${periodo=='semana'} ? ' btn-blue' : ' btn-gray'" class="btn">Semana</a>
+            <a th:href="@{/estatisticas(periodo='mes')}"
+               th:classappend="${periodo=='mes'} ? ' btn-blue' : ' btn-gray'" class="btn">Mês</a>
+            <a th:href="@{/estatisticas(periodo='ano')}"
+               th:classappend="${periodo=='ano'} ? ' btn-blue' : ' btn-gray'" class="btn">Ano</a>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-value text-green" th:text="${#numbers.formatDecimal(receita,1,2)} + ' €'"></div>
+            <div class="stat-label">Receita</div>
+            <div class="stat-sub">reservas confirmadas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-blue" th:text="${totalReservas}"></div>
+            <div class="stat-label">Reservas</div>
+            <div class="stat-sub">no período</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-green" th:text="${confirmadas}"></div>
+            <div class="stat-label">Confirmadas</div>
+            <div class="stat-sub">reservas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-red" th:text="${canceladas}"></div>
+            <div class="stat-label">Canceladas</div>
+            <div class="stat-sub">reservas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color:#f57c00" th:text="${pendentes}"></div>
+            <div class="stat-label">Pendentes</div>
+            <div class="stat-sub">reservas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-red" th:text="${totalCorridas}"></div>
+            <div class="stat-label">Corridas</div>
+            <div class="stat-sub">no período</div>
+        </div>
+    </div>
+
+    <!-- Detalhe de reservas -->
+    <div class="card">
+        <div class="card-title">Reservas no Período</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Data</th><th>Cliente</th><th>Kart</th><th>Pista</th><th>Estado</th><th>Valor</th></tr></thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(reservas)}">
+                        <td colspan="6" style="text-align:center;color:var(--text-gray);padding:24px">Nenhuma reserva no período.</td>
+                    </tr>
+                    <tr th:each="r : ${reservas}">
+                        <td th:text="${#temporals.format(r.dataHoraInicio,'dd/MM/yyyy HH:mm')}" class="text-gray"></td>
+                        <td><strong th:text="${r.cliente.nome}"></strong></td>
+                        <td th:text="'#' + ${r.kart.numero}"></td>
+                        <td th:text="${r.pistaNome}"></td>
+                        <td>
+                            <span class="badge badge-blue"   th:if="${r.estado.name() == 'PENDENTE'}">PENDENTE</span>
+                            <span class="badge badge-green"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
+                            <span class="badge badge-red"    th:if="${r.estado.name() == 'CANCELADA'}">CANCELADA</span>
+                        </td>
+                        <td th:text="${#numbers.formatDecimal(r.kart.categoria.precoBase,1,2)} + ' €'" class="text-green"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

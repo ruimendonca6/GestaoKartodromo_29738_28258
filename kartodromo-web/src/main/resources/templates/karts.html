@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Karts — Kartódromo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
+
+<main class="main">
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1>Karts</h1>
+            <p>Gestão da frota de karts</p>
+        </div>
+        <button class="btn btn-green" onclick="openModal('modal-criar')">+ Novo Kart</button>
+    </div>
+
+    <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+    <div th:if="${erro}"    class="alert alert-error"   th:text="${erro}"></div>
+
+    <div class="card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nº Kart</th>
+                        <th>Categoria</th>
+                        <th>Estado</th>
+                        <th>Disponível</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(karts)}">
+                        <td colspan="6" style="text-align:center;color:var(--text-gray);padding:24px">Nenhum kart registado.</td>
+                    </tr>
+                    <tr th:each="k : ${karts}">
+                        <td th:text="${k.id}" class="text-gray"></td>
+                        <td><strong th:text="'Kart #' + ${k.numero}"></strong></td>
+                        <td th:text="${k.categoria.descricao}" class="text-gray"></td>
+                        <td>
+                            <span th:if="${k.estado.name() == 'OPERACIONAL'}"  class="badge badge-green">OPERACIONAL</span>
+                            <span th:if="${k.estado.name() == 'EM_MANUTENCAO'}" class="badge badge-orange">EM MANUTENÇÃO</span>
+                            <span th:if="${k.estado.name() == 'INATIVO'}"       class="badge badge-gray">INATIVO</span>
+                        </td>
+                        <td>
+                            <span th:if="${k.disponivel}"  class="badge badge-green">Sim</span>
+                            <span th:if="${!k.disponivel}" class="badge badge-red">Não</span>
+                        </td>
+                        <td>
+                            <div class="flex gap-8">
+                                <button class="btn btn-blue btn-xs"
+                                        th:attr="data-id=${k.id},data-estado=${k.estado.name()}"
+                                        onclick="populateEditFromDataset(this,'modal-estado')">
+                                    ✎ Estado
+                                </button>
+                                <button class="btn btn-gray btn-xs"
+                                        th:attr="data-id=${k.id},data-disponivel=${k.disponivel}"
+                                        onclick="populateEditFromDataset(this,'modal-disp')">
+                                    ⇄ Disponib.
+                                </button>
+                                <form th:id="'del-' + ${k.id}" method="post" action="/karts/remover">
+                                    <input type="hidden" name="id" th:value="${k.id}"/>
+                                    <button type="button" class="btn btn-red btn-xs"
+                                            th:attr="data-form-id='del-' + ${k.id},data-msg='Remover Kart #' + ${k.numero} + '?'"
+                                            onclick="confirmDeleteEl(this)">
+                                        🗑
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Criar -->
+<div class="modal-overlay" id="modal-criar">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-criar')">✕</button>
+        <h2>Novo Kart</h2>
+        <form method="post" action="/karts/criar">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Número</label>
+                    <input type="number" name="numero" min="1" required/>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado">
+                        <option th:each="e : ${estados}" th:value="${e.name()}" th:text="${e.name()}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select name="categoriaId" required>
+                        <option value="">Selecionar...</option>
+                        <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.descricao} + ' (' + ${c.cilindrada} + 'cc)'"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Disponível</label>
+                    <select name="disponivel">
+                        <option value="true">Sim</option>
+                        <option value="false">Não</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-green">Criar Kart</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-criar')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Estado -->
+<div class="modal-overlay" id="modal-estado">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-estado')">✕</button>
+        <h2>Atualizar Estado</h2>
+        <form method="post" action="/karts/estado">
+            <input type="hidden" name="id"/>
+            <div class="form-group" style="margin-bottom:16px">
+                <label>Estado</label>
+                <select name="estado">
+                    <option th:each="e : ${estados}" th:value="${e.name()}" th:text="${e.name()}"></option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-blue">Guardar</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-estado')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Disponibilidade -->
+<div class="modal-overlay" id="modal-disp">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-disp')">✕</button>
+        <h2>Disponibilidade</h2>
+        <form method="post" action="/karts/disponibilidade">
+            <input type="hidden" name="id"/>
+            <div class="form-group" style="margin-bottom:16px">
+                <label>Disponível</label>
+                <select name="disponivel">
+                    <option value="true">Sim</option>
+                    <option value="false">Não</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-blue">Guardar</button>
+                <button type="button" class="btn btn-gray" onclick="closeModal('modal-disp')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
