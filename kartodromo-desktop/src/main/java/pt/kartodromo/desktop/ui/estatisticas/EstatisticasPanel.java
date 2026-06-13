@@ -18,7 +18,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -228,7 +227,7 @@ public class EstatisticasPanel extends JPanel {
 
     // Revenue bar chart card
     private JPanel buildChartCard() {
-        JPanel card = buildDetailCard("💰 Receita por período");
+        JPanel card = buildDetailCard("Receita por período");
 
         chartPanel = new JPanel() {
             @Override
@@ -245,7 +244,7 @@ public class EstatisticasPanel extends JPanel {
 
     // Corridas table card
     private JPanel buildCorridasCard() {
-        JPanel card = buildDetailCard("🏁 Corridas Realizadas");
+        JPanel card = buildDetailCard("Corridas Realizadas");
 
         String[] cols = {"Data", "Hora", "Duração", "Layout", "Categoria", "Cliente"};
         corridasModel = new DefaultTableModel(cols, 0) {
@@ -258,7 +257,7 @@ public class EstatisticasPanel extends JPanel {
 
     // Canceladas table card
     private JPanel buildCanceladasCard() {
-        JPanel card = buildDetailCard("❌ Reservas Canceladas");
+        JPanel card = buildDetailCard("Reservas Canceladas");
 
         String[] cols = {"Data", "Hora Início", "Hora Fim", "Cliente", "Kart", "Pista"};
         canceladasModel = new DefaultTableModel(cols, 0) {
@@ -271,7 +270,7 @@ public class EstatisticasPanel extends JPanel {
 
     // Ocupação table card
     private JPanel buildOcupacaoCard() {
-        JPanel card = buildDetailCard("📊 Taxa de Ocupação por Pista");
+        JPanel card = buildDetailCard("Taxa de Ocupação por Pista");
 
         String[] cols = {"Pista", "Reservas", "Min. Ocupados", "Min. Disponíveis", "Taxa"};
         ocupacaoModel = new DefaultTableModel(cols, 0) {

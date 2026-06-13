@@ -9,17 +9,17 @@ import javax.swing.WindowConstants;
 
 import pt.kartodromo.desktop.ui.auth.AuthUser;
 import pt.kartodromo.desktop.ui.auth.LoginDialog;
+import pt.kartodromo.desktop.ui.calendario.CalendarioPanel;
 import pt.kartodromo.desktop.ui.categorias.CategoriaPanel;
 import pt.kartodromo.desktop.ui.clientes.ClientePanel;
 import pt.kartodromo.desktop.ui.corridas.CorridaPanel;
 import pt.kartodromo.desktop.ui.dashboard.DashboardPanel;
+import pt.kartodromo.desktop.ui.disponibilidade.DisponibilidadePanel;
+import pt.kartodromo.desktop.ui.estatisticas.EstatisticasPanel;
 import pt.kartodromo.desktop.ui.karts.KartPanel;
 import pt.kartodromo.desktop.ui.perfil.PerfilPanel;
 import pt.kartodromo.desktop.ui.pistas.PistasPanel;
 import pt.kartodromo.desktop.ui.reservas.ReservaPanel;
-import pt.kartodromo.desktop.ui.calendario.CalendarioPanel;
-import pt.kartodromo.desktop.ui.disponibilidade.DisponibilidadePanel;
-import pt.kartodromo.desktop.ui.estatisticas.EstatisticasPanel;
 import pt.kartodromo.desktop.ui.utilizadores.UtilizadoresPanel;
 
 public class KartodromoDesktopFrame extends JFrame {
@@ -39,6 +39,8 @@ public class KartodromoDesktopFrame extends JFrame {
     private final DisponibilidadePanel disponibilidadePanel;
     private final EstatisticasPanel estatisticasPanel;
 
+    private final JTabbedPane tabs = new JTabbedPane();
+
     public KartodromoDesktopFrame(AuthUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
 
@@ -56,24 +58,27 @@ public class KartodromoDesktopFrame extends JFrame {
         setLayout(new BorderLayout());
 
         dashboardPanel = new DashboardPanel();
+
+        corridaPanel =
+                new CorridaPanel(this::abrirPistas);
+
+        pistasPanel =
+                new PistasPanel(this::selecionarPistaNaCorrida);
+
         clientePanel = new ClientePanel();
         categoriaPanel = new CategoriaPanel();
         kartPanel = new KartPanel();
-        corridaPanel = new CorridaPanel();
         reservaPanel = new ReservaPanel();
-        pistasPanel = new PistasPanel();
         utilizadoresPanel = new UtilizadoresPanel();
         calendarioPanel = new CalendarioPanel();
         disponibilidadePanel = new DisponibilidadePanel();
-        estatisticasPanel    = new EstatisticasPanel();
+        estatisticasPanel = new EstatisticasPanel();
 
         perfilPanel =
                 new PerfilPanel(
                         authenticatedUser,
                         this::logout
                 );
-
-        JTabbedPane tabs = new JTabbedPane();
 
         configureTabsByRole(tabs);
 
@@ -99,6 +104,7 @@ public class KartodromoDesktopFrame extends JFrame {
             tabs.addTab(UiLabels.KARTS, kartPanel);
             tabs.addTab(UiLabels.CORRIDAS, corridaPanel);
             tabs.addTab(UiLabels.RESERVAS, reservaPanel);
+            tabs.addTab(UiLabels.PISTAS, pistasPanel);
             tabs.addTab(UiLabels.CALENDARIO, calendarioPanel);
             tabs.addTab(UiLabels.DISPONIBILIDADE, disponibilidadePanel);
             tabs.addTab(UiLabels.ESTATISTICAS, estatisticasPanel);
@@ -118,6 +124,18 @@ public class KartodromoDesktopFrame extends JFrame {
             tabs.addTab(UiLabels.ESTATISTICAS, estatisticasPanel);
             tabs.addTab(UiLabels.UTILIZADORES, utilizadoresPanel);
             tabs.addTab(UiLabels.PERFIL, perfilPanel);
+        }
+    }
+
+    private void abrirPistas() {
+        tabs.setSelectedComponent(pistasPanel);
+    }
+
+    private void selecionarPistaNaCorrida(String pistaSelecionada) {
+        corridaPanel.setLayoutSelecionado(pistaSelecionada);
+
+        if (!authenticatedUser.isCliente()) {
+            tabs.setSelectedComponent(corridaPanel);
         }
     }
 

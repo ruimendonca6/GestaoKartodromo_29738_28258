@@ -1,10 +1,10 @@
 package pt.kartodromo.desktop.ui.pistas;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -19,7 +19,15 @@ import pt.kartodromo.desktop.ui.UiStyle;
 
 public class PistasPanel extends JPanel {
 
+    private final Consumer<String> onPistaSelecionada;
+
     public PistasPanel() {
+        this(null);
+    }
+
+    public PistasPanel(Consumer<String> onPistaSelecionada) {
+        this.onPistaSelecionada = onPistaSelecionada;
+
         setLayout(new BorderLayout());
         setBackground(UiStyle.BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -34,7 +42,7 @@ public class PistasPanel extends JPanel {
         grid.add(createTrackCard(
                 "Pista Técnica",
                 "/images/pista1.png",
-                "⭐⭐⭐⭐⭐",
+                "5/5",
                 "650 m",
                 "18",
                 "Treino / Técnica"
@@ -43,7 +51,7 @@ public class PistasPanel extends JPanel {
         grid.add(createTrackCard(
                 "Pista Completa",
                 "/images/pista2.png",
-                "⭐⭐⭐⭐",
+                "4/5",
                 "1200 m",
                 "24",
                 "Corrida Oficial"
@@ -52,7 +60,7 @@ public class PistasPanel extends JPanel {
         grid.add(createTrackCard(
                 "Pista Sprint",
                 "/images/pista3.png",
-                "⭐⭐⭐",
+                "3/5",
                 "450 m",
                 "10",
                 "Sessões rápidas"
@@ -105,14 +113,7 @@ public class PistasPanel extends JPanel {
                         UiStyle.PRIMARY_RED
                 );
 
-        selecionarButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(
-                        this,
-                        nome + " selecionada com sucesso.",
-                        "Pista selecionada",
-                        JOptionPane.INFORMATION_MESSAGE
-                )
-        );
+        selecionarButton.addActionListener(e -> selecionarPista(nome));
 
         JPanel bottomPanel = new JPanel(new BorderLayout(12, 12));
         bottomPanel.setOpaque(false);
@@ -124,6 +125,19 @@ public class PistasPanel extends JPanel {
         content.add(bottomPanel, BorderLayout.SOUTH);
 
         return UiStyle.createCard(content);
+    }
+
+    private void selecionarPista(String nome) {
+        if (onPistaSelecionada != null) {
+            onPistaSelecionada.accept(nome);
+        }
+
+        JOptionPane.showMessageDialog(
+                this,
+                nome + " selecionada com sucesso.",
+                "Pista selecionada",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private JLabel createInfoLabel(String text) {

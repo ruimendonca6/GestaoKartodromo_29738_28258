@@ -42,12 +42,20 @@ public class CorridaPanel extends JPanel {
     private final CategoriaKartService categoriaService = new CategoriaKartService();
     private final ClienteService clienteService = new ClienteService();
 
+    private final Runnable abrirPistasAction;
+
     private Long corridaSelecionadaId = null;
 
-    private final JTextField dataHoraField = new JTextField("2030-01-01 10:00");
+    private String layoutSelecionado = "Pista Completa";
+
+    private final JTextField dataHoraField =
+            new JTextField(LocalDateTime.now().format(DATE_TIME_FORMAT));
+
     private final JTextField duracaoField = new JTextField("15");
     private final JTextField vagasField = new JTextField("10");
-    private final JTextField layoutField = new JTextField("Pista Completa");
+
+    private final JLabel layoutSelecionadoLabel =
+            new JLabel(layoutSelecionado);
 
     private final JComboBox<CategoriaKart> categoriaCombo = new JComboBox<>();
     private final JComboBox<Cliente> clienteCombo = new JComboBox<>();
@@ -74,6 +82,12 @@ public class CorridaPanel extends JPanel {
     private final JTable corridasTable = new JTable(corridasTableModel);
 
     public CorridaPanel() {
+        this(null);
+    }
+
+    public CorridaPanel(Runnable abrirPistasAction) {
+        this.abrirPistasAction = abrirPistasAction;
+
         setLayout(new BorderLayout(20, 20));
         setBackground(UiStyle.BACKGROUND_COLOR);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -106,7 +120,7 @@ public class CorridaPanel extends JPanel {
         addFormRow(fieldsPanel, gbc, 0, "Data/hora (yyyy-MM-dd HH:mm)", dataHoraField);
         addFormRow(fieldsPanel, gbc, 1, "Duração (minutos)", duracaoField);
         addFormRow(fieldsPanel, gbc, 2, "Vagas máximas", vagasField);
-        addFormRow(fieldsPanel, gbc, 3, "Layout", layoutField);
+        addFormRow(fieldsPanel, gbc, 3, "Layout", buildLayoutSelector());
         addFormRow(fieldsPanel, gbc, 4, "Cliente", clienteCombo);
         addFormRow(fieldsPanel, gbc, 5, "Categoria", categoriaCombo);
 
@@ -123,6 +137,30 @@ public class CorridaPanel extends JPanel {
         form.add(actionsPanel, BorderLayout.SOUTH);
 
         return form;
+    }
+
+    private JPanel buildLayoutSelector() {
+        JButton selecionarPistaButton =
+                UiStyle.createActionButton(
+                        "Selecionar pista",
+                        UiStyle.PRIMARY_RED
+                );
+
+        selecionarPistaButton.addActionListener(e -> {
+            if (abrirPistasAction != null) {
+                abrirPistasAction.run();
+            }
+        });
+
+        layoutSelecionadoLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        layoutSelecionadoLabel.setForeground(UiStyle.BLACK);
+
+        JPanel panel = new JPanel(new BorderLayout(12, 0));
+        panel.setOpaque(false);
+        panel.add(selecionarPistaButton, BorderLayout.WEST);
+        panel.add(layoutSelecionadoLabel, BorderLayout.CENTER);
+
+        return panel;
     }
 
     private JScrollPane buildTable() {
@@ -157,7 +195,7 @@ public class CorridaPanel extends JPanel {
                     Integer.parseInt(vagasField.getText().trim()),
                     categoria.getId(),
                     cliente.getId(),
-                    layoutField.getText().trim()
+                    layoutSelecionado
             );
 
             showInfo("Corrida criada com sucesso: " + corrida.getId());
@@ -196,7 +234,7 @@ public class CorridaPanel extends JPanel {
                     Integer.parseInt(vagasField.getText().trim()),
                     categoria.getId(),
                     cliente.getId(),
-                    layoutField.getText().trim()
+                    layoutSelecionado
             );
 
             showInfo("Corrida atualizada com sucesso.");
@@ -265,7 +303,7 @@ public class CorridaPanel extends JPanel {
         dataHoraField.setText(corrida.getDataHoraInicio().format(DATE_TIME_FORMAT));
         duracaoField.setText(String.valueOf(corrida.getDuracaoMinutos()));
         vagasField.setText(String.valueOf(corrida.getVagasMaximas()));
-        layoutField.setText(corrida.getLayoutNome());
+        setLayoutSelecionado(corrida.getLayoutNome());
 
         if (corrida.getCliente() != null) {
             selecionarClientePorId(corrida.getCliente().getId());
@@ -274,6 +312,16 @@ public class CorridaPanel extends JPanel {
         if (corrida.getCategoria() != null) {
             selecionarCategoriaPorId(corrida.getCategoria().getId());
         }
+    }
+
+    public void setLayoutSelecionado(String layoutSelecionado) {
+        if (layoutSelecionado == null || layoutSelecionado.isBlank()) {
+            this.layoutSelecionado = "Pista Completa";
+        } else {
+            this.layoutSelecionado = layoutSelecionado;
+        }
+
+        layoutSelecionadoLabel.setText(this.layoutSelecionado);
     }
 
     private Corrida encontrarCorridaPorId(Long id) {
@@ -311,10 +359,10 @@ public class CorridaPanel extends JPanel {
     private void limparFormulario() {
         corridaSelecionadaId = null;
 
-        dataHoraField.setText("2030-01-01 10:00");
+        dataHoraField.setText(LocalDateTime.now().format(DATE_TIME_FORMAT));
         duracaoField.setText("15");
         vagasField.setText("10");
-        layoutField.setText("Pista Completa");
+        setLayoutSelecionado("Pista Completa");
 
         if (clienteCombo.getItemCount() > 0) {
             clienteCombo.setSelectedIndex(0);
