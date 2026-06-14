@@ -3,29 +3,129 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Login - Kartódromo</title>
+    <title>Autenticação - Kartódromo</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 <body>
-<div class="login-page">
-    <div class="login-box">
-        <h1>🏁 Kartódromo</h1>
-        <p>Sistema de Gestão Desktop</p>
+
+<div class="desktop-auth-page">
+
+    <div class="desktop-auth-window">
+
+        <h1>Gestódromo - Gestão de um Kartódromo</h1>
+        <p class="desktop-auth-subtitle">Inicie sessão ou crie uma nova conta</p>
 
         <div th:if="${erro}" class="alert alert-error" th:text="${erro}"></div>
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
 
-        <form method="post" action="/login/submit">
-            <div class="form-group">
-                <label for="username">Utilizador</label>
-                <input type="text" id="username" name="username" placeholder="admin" required autofocus/>
+        <div class="desktop-auth-card">
+
+            <div class="desktop-tabs">
+                <button type="button"
+                        id="tab-login-btn"
+                        class="desktop-tab"
+                        th:classappend="${activeTab == null or activeTab == 'login'} ? ' active' : ''"
+                        onclick="showAuthTab('login')">
+                    Login
+                </button>
+
+                <button type="button"
+                        id="tab-register-btn"
+                        class="desktop-tab"
+                        th:classappend="${activeTab == 'register'} ? ' active' : ''"
+                        onclick="showAuthTab('register')">
+                    Criar conta
+                </button>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="••••••" required/>
+
+            <div class="desktop-tab-line"></div>
+
+            <div id="tab-login"
+                 class="desktop-auth-tab-content"
+                 th:classappend="${activeTab == null or activeTab == 'login'} ? ' active' : ''">
+
+                <form method="post" th:action="@{/login/submit}">
+                    <div class="desktop-auth-form-row">
+                        <label for="username">Utilizador</label>
+                        <input type="text" id="username" name="username" required autofocus/>
+                    </div>
+
+                    <div class="desktop-auth-form-row">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required/>
+                    </div>
+
+                    <div class="desktop-auth-form-row">
+                        <label></label>
+                        <button type="submit" class="desktop-auth-login-btn">Entrar</button>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-red">Entrar</button>
-        </form>
+
+            <div id="tab-register"
+                 class="desktop-auth-tab-content"
+                 th:classappend="${activeTab == 'register'} ? ' active' : ''">
+
+                <form method="post" th:action="@{/login/register}">
+                    <div class="desktop-auth-form-row">
+                        <label for="newUsername">Novo utilizador</label>
+                        <input type="text" id="newUsername" name="username" required/>
+                    </div>
+
+                    <div class="desktop-auth-form-row">
+                        <label for="newEmail">Email</label>
+                        <input type="email" id="newEmail" name="email" required/>
+                    </div>
+
+                    <div class="desktop-auth-form-row">
+                        <label for="newPassword">Password</label>
+                        <input type="password" id="newPassword" name="password" required/>
+                    </div>
+
+                    <div class="desktop-auth-form-row">
+                        <label for="confirmPassword">Confirmar password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required/>
+                    </div>
+
+                    <div class="desktop-auth-form-row">
+                        <label for="role">Tipo de conta</label>
+                        <select id="role" name="role">
+                            <option value="CLIENTE">CLIENTE</option>
+                            <option value="FUNCIONARIO">FUNCIONÁRIO</option>
+                        </select>
+                    </div>
+
+                    <div class="desktop-auth-form-row">
+                        <label></label>
+                        <button type="submit" class="desktop-auth-register-btn">Criar conta</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
     </div>
 </div>
+
+<script>
+    function showAuthTab(tab) {
+        const loginBtn = document.getElementById("tab-login-btn");
+        const registerBtn = document.getElementById("tab-register-btn");
+        const loginTab = document.getElementById("tab-login");
+        const registerTab = document.getElementById("tab-register");
+
+        if (tab === "login") {
+            loginBtn.classList.add("active");
+            registerBtn.classList.remove("active");
+            loginTab.classList.add("active");
+            registerTab.classList.remove("active");
+        } else {
+            registerBtn.classList.add("active");
+            loginBtn.classList.remove("active");
+            registerTab.classList.add("active");
+            loginTab.classList.remove("active");
+        }
+    }
+</script>
+
 </body>
 </html>

@@ -770,3 +770,122 @@ input:focus, select:focus, textarea:focus {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================================================
+   AUTH PAGE — DESKTOP STYLE
+   ========================================================== */
+
+.desktop-auth-page {
+    min-height: 100vh;
+    background: #f5f7fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.desktop-auth-window {
+    width: 760px;
+    max-width: 100%;
+}
+
+.desktop-auth-window h1 {
+    color: #1565c0;
+    font-size: 34px;
+    font-weight: 800;
+    margin-bottom: 18px;
+}
+
+.desktop-auth-subtitle {
+    font-size: 18px;
+    color: #111;
+    margin-bottom: 20px;
+}
+
+.desktop-auth-card {
+    background: #ffffff;
+    border: 1px solid #cfd8dc;
+    padding: 22px;
+}
+
+.desktop-tabs {
+    display: flex;
+    align-items: center;
+}
+
+.desktop-tab {
+    border: none;
+    background: #f3f3f3;
+    padding: 14px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #000;
+    border-bottom: 4px solid transparent;
+}
+
+.desktop-tab.active {
+    background: #e8eef5;
+    border-bottom-color: #2b7dcc;
+}
+
+.desktop-tab-line {
+    height: 1px;
+    background: #bdbdbd;
+    margin-bottom: 48px;
+}
+
+.desktop-auth-tab-content {
+    display: none;
+}
+
+.desktop-auth-tab-content.active {
+    display: block;
+}
+
+.desktop-auth-form-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.desktop-auth-form-row label {
+    font-size: 18px;
+    color: #000;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+}
+
+.desktop-auth-form-row input,
+.desktop-auth-form-row select {
+    height: 38px;
+    border: 1px solid #bdbdbd;
+    border-radius: 0;
+    font-size: 17px;
+    padding: 6px 10px;
+}
+
+.desktop-auth-login-btn {
+    height: 48px;
+    background: #1e6bc1;
+    color: #fff;
+    border: none;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.desktop-auth-register-btn {
+    height: 48px;
+    background: #2e7d32;
+    color: #fff;
+    border: none;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.desktop-auth-login-btn:hover,
+.desktop-auth-register-btn:hover {
+    filter: brightness(1.08);
+}

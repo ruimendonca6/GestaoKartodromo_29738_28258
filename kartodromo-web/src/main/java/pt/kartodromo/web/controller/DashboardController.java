@@ -36,38 +36,64 @@ public class DashboardController {
 
         LocalDate hoje = LocalDate.now();
 
-        List<Reserva> reservas = reservaService.listarReservas();
-        List<Corrida> corridas = corridaService.listarCorridas();
+        List<Reserva> todasReservas = reservaService.listarReservas();
+        List<Corrida> todasCorridas = corridaService.listarCorridas();
 
-        long totalClientes = clienteService.listarClientes().size();
-        long totalCategorias = categoriaService.listarCategorias().size();
-        long totalKarts = kartService.listarKarts().size();
-        long totalCorridas = corridas.size();
-        long totalReservas = reservas.size();
+        List<Reserva> reservasVisiveis = todasReservas;
 
-        long reservasPendentes = reservas.stream()
+        if (user != null && user.isCliente()) {
+            reservasVisiveis = todasReservas.stream()
+                    .filter(r -> pertenceAoUtilizador(r, user))
+                    .toList();
+        }
+
+        long totalClientes;
+        long totalCategorias;
+        long totalKarts;
+        long totalCorridas;
+        long totalReservas;
+
+        if (user != null && user.isCliente()) {
+            totalClientes = 1;
+            totalCategorias = 0;
+            totalKarts = 0;
+            totalCorridas = 0;
+            totalReservas = reservasVisiveis.size();
+        } else {
+            totalClientes = clienteService.listarClientes().size();
+            totalCategorias = categoriaService.listarCategorias().size();
+            totalKarts = kartService.listarKarts().size();
+            totalCorridas = todasCorridas.size();
+            totalReservas = todasReservas.size();
+        }
+
+        long reservasPendentes = reservasVisiveis.stream()
                 .filter(r -> r.getEstado() != null)
                 .filter(r -> "PENDENTE".equalsIgnoreCase(r.getEstado().name()))
                 .count();
 
-        long corridasHoje = corridas.stream()
+        long corridasHoje = todasCorridas.stream()
                 .filter(c -> c.getDataHoraInicio() != null)
                 .filter(c -> c.getDataHoraInicio().toLocalDate().equals(hoje))
                 .count();
 
-        long reservasHoje = reservas.stream()
+        if (user != null && user.isCliente()) {
+            corridasHoje = 0;
+        }
+
+        long reservasHoje = reservasVisiveis.stream()
                 .filter(r -> r.getDataHoraInicio() != null)
                 .filter(r -> r.getDataHoraInicio().toLocalDate().equals(hoje))
                 .count();
 
-        long confirmadasHoje = reservas.stream()
+        long confirmadasHoje = reservasVisiveis.stream()
                 .filter(r -> r.getEstado() != null)
                 .filter(r -> "CONFIRMADA".equalsIgnoreCase(r.getEstado().name()))
                 .filter(r -> r.getDataHoraInicio() != null)
                 .filter(r -> r.getDataHoraInicio().toLocalDate().equals(hoje))
                 .count();
 
-        long canceladasHoje = reservas.stream()
+        long canceladasHoje = reservasVisiveis.stream()
                 .filter(r -> r.getEstado() != null)
                 .filter(r -> "CANCELADA".equalsIgnoreCase(r.getEstado().name()))
                 .filter(r -> r.getDataHoraInicio() != null)
@@ -92,6 +118,27 @@ public class DashboardController {
         model.addAttribute("confirmadasHoje", confirmadasHoje);
         model.addAttribute("canceladasHoje", canceladasHoje);
 
+        model.addAttribute("clienteView", user != null && user.isCliente());
+
         return "dashboard";
+    }
+
+    private boolean pertenceAoUtilizador(Reserva reserva, WebAuthUser user) {
+        if (reserva == null || reserva.getCliente() == null || user == null) return false;
+
+        String username = normalizar(user.getUsername());
+        String email = normalizar(user.getEmail());
+
+        String nomeCliente = normalizar(reserva.getCliente().getNome());
+        String emailCliente = normalizar(reserva.getCliente().getEmail());
+
+        return nomeCliente.equals(username)
+                || emailCliente.equals(email)
+                || emailCliente.equals(username)
+                || nomeCliente.equals(email);
+    }
+
+    private String normalizar(String valor) {
+        return valor == null ? "" : valor.trim().toLowerCase();
     }
 }
