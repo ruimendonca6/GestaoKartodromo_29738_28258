@@ -2,88 +2,268 @@
 <html lang="pt" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Estatísticas — Kartódromo</title>
+    <title>Estatísticas - Kartódromo</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
+
 <body>
 <nav th:replace="~{fragments/sidebar :: sidebar}"></nav>
 
 <main class="main">
-    <div class="page-header flex justify-between items-center">
+    <div class="page-header estatisticas-header">
         <div>
             <h1>Estatísticas</h1>
-            <p th:text="'De ' + ${#temporals.format(inicio,'dd/MM/yyyy')} + ' a ' + ${#temporals.format(fim,'dd/MM/yyyy')}"></p>
+            <p th:text="'De ' + ${#temporals.format(inicio,'dd/MM/yyyy')} + ' a ' + ${#temporals.format(fim,'dd/MM/yyyy')}">
+                Período
+            </p>
         </div>
-        <div style="display:flex;gap:8px">
+
+        <div class="periodo-buttons">
             <a th:href="@{/estatisticas(periodo='semana')}"
-               th:classappend="${periodo=='semana'} ? ' btn-blue' : ' btn-gray'" class="btn">Semana</a>
+               th:classappend="${periodo == 'semana'} ? ' periodo-active' : ''"
+               class="periodo-btn">
+                Esta semana
+            </a>
+
             <a th:href="@{/estatisticas(periodo='mes')}"
-               th:classappend="${periodo=='mes'} ? ' btn-blue' : ' btn-gray'" class="btn">Mês</a>
+               th:classappend="${periodo == 'mes'} ? ' periodo-active' : ''"
+               class="periodo-btn">
+                Este mês
+            </a>
+
             <a th:href="@{/estatisticas(periodo='ano')}"
-               th:classappend="${periodo=='ano'} ? ' btn-blue' : ' btn-gray'" class="btn">Ano</a>
+               th:classappend="${periodo == 'ano'} ? ' periodo-active' : ''"
+               class="periodo-btn">
+                Este ano
+            </a>
         </div>
     </div>
 
-    <!-- KPIs -->
-    <div class="stat-grid">
-        <div class="stat-card">
-            <div class="stat-value text-green" th:text="${#numbers.formatDecimal(receita,1,2)} + ' €'"></div>
-            <div class="stat-label">Receita</div>
-            <div class="stat-sub">reservas confirmadas</div>
+    <section class="desktop-kpi-grid">
+        <div class="desktop-kpi kpi-blue">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-value text-blue"
+                 th:text="'€ ' + ${#numbers.formatDecimal(receita, 1, 2)}">
+                € 0,00
+            </div>
+            <div class="kpi-sub">reservas confirmadas</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value text-blue" th:text="${totalReservas}"></div>
-            <div class="stat-label">Reservas</div>
-            <div class="stat-sub">no período</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value text-green" th:text="${confirmadas}"></div>
-            <div class="stat-label">Confirmadas</div>
-            <div class="stat-sub">reservas</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value text-red" th:text="${canceladas}"></div>
-            <div class="stat-label">Canceladas</div>
-            <div class="stat-sub">reservas</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" style="color:#f57c00" th:text="${pendentes}"></div>
-            <div class="stat-label">Pendentes</div>
-            <div class="stat-sub">reservas</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value text-red" th:text="${totalCorridas}"></div>
-            <div class="stat-label">Corridas</div>
-            <div class="stat-sub">no período</div>
-        </div>
-    </div>
 
-    <!-- Detalhe de reservas -->
-    <div class="card">
-        <div class="card-title">Reservas no Período</div>
-        <div class="table-wrapper">
-            <table>
-                <thead><tr><th>Data</th><th>Cliente</th><th>Kart</th><th>Pista</th><th>Estado</th><th>Valor</th></tr></thead>
-                <tbody>
-                    <tr th:if="${#lists.isEmpty(reservas)}">
-                        <td colspan="6" style="text-align:center;color:var(--text-gray);padding:24px">Nenhuma reserva no período.</td>
+        <div class="desktop-kpi kpi-green">
+            <div class="kpi-icon">🏁</div>
+            <div class="kpi-value text-green" th:text="${totalCorridas}">
+                0
+            </div>
+            <div class="kpi-sub"
+                 th:text="${#temporals.format(inicio,'dd/MM/yyyy')} + ' – ' + ${#temporals.format(fim,'dd/MM/yyyy')}">
+                período
+            </div>
+        </div>
+
+        <div class="desktop-kpi kpi-red">
+            <div class="kpi-icon">✕</div>
+            <div class="kpi-value text-red">
+                <span th:text="${canceladas}">0</span>
+                <span th:text="' (' + ${#numbers.formatDecimal(taxaCancelamento, 1, 0)} + '%)'">
+                    (0%)
+                </span>
+            </div>
+            <div class="kpi-sub"
+                 th:text="'de ' + ${totalReservas} + ' reservas'">
+                de 0 reservas
+            </div>
+        </div>
+
+        <div class="desktop-kpi kpi-orange">
+            <div class="kpi-icon">📊</div>
+            <div class="kpi-value text-orange" th:text="${totalPistas}">
+                0
+            </div>
+            <div class="kpi-sub">pista(s) no período</div>
+        </div>
+    </section>
+
+    <section class="estatisticas-grid">
+        <div class="desktop-panel">
+            <h2>Receita por período</h2>
+
+            <div class="bar-chart">
+                <div class="bar-item" th:each="item : ${receitaGrafico}">
+                    <div class="bar-area">
+                        <div class="bar-value"
+                             th:if="${item.temValor}"
+                             th:text="${item.valorFormatado}">
+                            0€
+                        </div>
+
+                        <div class="bar"
+                             th:style="'height:' + ${item.altura} + 'px'">
+                        </div>
+                    </div>
+
+                    <div class="bar-label" th:text="${item.label}">
+                        dia
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="desktop-panel">
+            <h2>Corridas Realizadas</h2>
+
+            <div class="table-wrapper">
+                <table class="desktop-table">
+                    <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Duração</th>
+                        <th>Layout</th>
+                        <th>Categoria</th>
+                        <th>Cliente</th>
                     </tr>
-                    <tr th:each="r : ${reservas}">
-                        <td th:text="${#temporals.format(r.dataHoraInicio,'dd/MM/yyyy HH:mm')}" class="text-gray"></td>
-                        <td><strong th:text="${r.cliente.nome}"></strong></td>
-                        <td th:text="'#' + ${r.kart.numero}"></td>
-                        <td th:text="${r.pistaNome}"></td>
-                        <td>
-                            <span class="badge badge-blue"   th:if="${r.estado.name() == 'PENDENTE'}">PENDENTE</span>
-                            <span class="badge badge-green"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
-                            <span class="badge badge-red"    th:if="${r.estado.name() == 'CANCELADA'}">CANCELADA</span>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(corridas)}">
+                        <td colspan="6" class="empty-cell">
+                            Nenhuma corrida realizada.
                         </td>
-                        <td th:text="${#numbers.formatDecimal(r.kart.categoria.precoBase,1,2)} + ' €'" class="text-green"></td>
                     </tr>
-                </tbody>
-            </table>
+
+                    <tr th:each="c : ${corridas}">
+                        <td th:text="${#temporals.format(c.dataHoraInicio,'dd/MM/yyyy')}">
+                            13/06/2026
+                        </td>
+
+                        <td th:text="${#temporals.format(c.dataHoraInicio,'HH:mm')}">
+                            15:30
+                        </td>
+
+                        <td th:text="${c.duracaoMinutos} + ' min'">
+                            60 min
+                        </td>
+
+                        <td th:text="${c.layoutNome}">
+                            Pista Técnica
+                        </td>
+
+                        <td th:text="${c.categoria != null ? c.categoria.descricao : '-'}">
+                            Categoria
+                        </td>
+
+                        <td th:text="${c.cliente != null ? c.cliente.nome : '-'}">
+                            Cliente
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+
+        <div class="desktop-panel">
+            <h2>Reservas Canceladas</h2>
+
+            <div class="table-wrapper">
+                <table class="desktop-table">
+                    <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Hora Início</th>
+                        <th>Hora Fim</th>
+                        <th>Cliente</th>
+                        <th>Kart</th>
+                        <th>Pista</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${canceladas == 0}">
+                        <td colspan="6" class="empty-cell">
+                            Nenhuma reserva cancelada.
+                        </td>
+                    </tr>
+
+                    <tr th:each="r : ${reservas}"
+                        th:if="${r.estado.name() == 'CANCELADA'}">
+
+                        <td th:text="${#temporals.format(r.dataHoraInicio,'dd/MM/yyyy')}">
+                            13/06/2026
+                        </td>
+
+                        <td th:text="${#temporals.format(r.dataHoraInicio,'HH:mm')}">
+                            15:30
+                        </td>
+
+                        <td th:text="${#temporals.format(r.dataHoraFim,'HH:mm')}">
+                            16:00
+                        </td>
+
+                        <td th:text="${r.cliente != null ? r.cliente.nome : '-'}">
+                            Cliente
+                        </td>
+
+                        <td th:text="${r.kart != null ? '#' + r.kart.numero : '-'}">
+                            #1
+                        </td>
+
+                        <td th:text="${r.pistaNome}">
+                            Pista
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="desktop-panel">
+            <h2>Taxa de Ocupação por Pista</h2>
+
+            <div class="table-wrapper">
+                <table class="desktop-table">
+                    <thead>
+                    <tr>
+                        <th>Pista</th>
+                        <th>Reservas</th>
+                        <th>Min. Ocupados</th>
+                        <th>Min. Disponíveis</th>
+                        <th>Taxa</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(ocupacaoPistas)}">
+                        <td colspan="5" class="empty-cell">
+                            Nenhuma pista registada.
+                        </td>
+                    </tr>
+
+                    <tr th:each="o : ${ocupacaoPistas}">
+                        <td th:text="${o.pista}">
+                            Pista
+                        </td>
+
+                        <td th:text="${o.reservas}">
+                            0
+                        </td>
+
+                        <td th:text="${o.minutosOcupados} + ' min'">
+                            0 min
+                        </td>
+
+                        <td th:text="${o.minutosDisponiveis} + ' min'">
+                            0 min
+                        </td>
+
+                        <td th:text="${#numbers.formatDecimal(o.taxa, 1, 1)} + '%'">
+                            0,0%
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </main>
 
 <script th:src="@{/js/app.js}"></script>

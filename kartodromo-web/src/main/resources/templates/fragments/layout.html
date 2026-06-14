@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title th:text="${title} + ' — Kartódromo'">Kartódromo</title>
+    <title th:text="${title} + ' - Kartódromo'">Kartódromo</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 <body>
@@ -18,20 +18,20 @@
 
     <div th:if="${authUser.admin or authUser.funcionario}">
         <div class="sidebar-section">Gestão</div>
-        <a th:href="@{/dashboard}"    th:classappend="${activePage=='dashboard'}    ? 'active'">📊 Dashboard</a>
-        <a th:href="@{/clientes}"     th:classappend="${activePage=='clientes'}     ? 'active'">👥 Clientes</a>
-        <a th:href="@{/categorias}"   th:classappend="${activePage=='categorias'}   ? 'active'">🏷 Categorias</a>
-        <a th:href="@{/karts}"        th:classappend="${activePage=='karts'}        ? 'active'">🏎 Karts</a>
-        <a th:href="@{/corridas}"     th:classappend="${activePage=='corridas'}     ? 'active'">🏁 Corridas</a>
-        <a th:href="@{/reservas}"     th:classappend="${activePage=='reservas'}     ? 'active'">📅 Reservas</a>
-        <a th:href="@{/pistas}"       th:classappend="${activePage=='pistas'}       ? 'active'">🗺 Pistas</a>
+        <a th:href="@{/dashboard}"    th:classappend="${activePage=='dashboard'}    ? 'active'">Dashboard</a>
+        <a th:href="@{/clientes}"     th:classappend="${activePage=='clientes'}     ? 'active'">Clientes</a>
+        <a th:href="@{/categorias}"   th:classappend="${activePage=='categorias'}   ? 'active'">Categorias</a>
+        <a th:href="@{/karts}"        th:classappend="${activePage=='karts'}        ? 'active'">Karts</a>
+        <a th:href="@{/corridas}"     th:classappend="${activePage=='corridas'}     ? 'active'">Corridas</a>
+        <a th:href="@{/reservas}"     th:classappend="${activePage=='reservas'}     ? 'active'">Reservas</a>
+        <a th:href="@{/pistas}"       th:classappend="${activePage=='pistas'}       ? 'active'">Pistas</a>
     </div>
 
     <div th:if="${authUser.cliente}">
         <div class="sidebar-section">Menu</div>
-        <a th:href="@{/dashboard}"  th:classappend="${activePage=='dashboard'}  ? 'active'">📊 Dashboard</a>
-        <a th:href="@{/pistas}"     th:classappend="${activePage=='pistas'}     ? 'active'">🗺 Pistas</a>
-        <a th:href="@{/reservas}"   th:classappend="${activePage=='reservas'}   ? 'active'">📅 Reservas</a>
+        <a th:href="@{/dashboard}"  th:classappend="${activePage=='dashboard'}  ? 'active'">Dashboard</a>
+        <a th:href="@{/pistas}"     th:classappend="${activePage=='pistas'}     ? 'active'">Pistas</a>
+        <a th:href="@{/reservas}"   th:classappend="${activePage=='reservas'}   ? 'active'">Reservas</a>
     </div>
 
     <div class="sidebar-footer">

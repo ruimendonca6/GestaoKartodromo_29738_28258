@@ -9,7 +9,7 @@
         <property name="hibernate.connection.driver_class">org.h2.Driver</property>
 
         <property name="hibernate.connection.url">
-            jdbc:h2:file:./data/kartodromo-db;AUTO_SERVER=TRUE;MODE=PostgreSQL
+            jdbc:h2:file:C:/Users/ruiag/OneDrive/Documents/GitHub/GestaoKartodromo_29738_28258/data/kartodromo-db;AUTO_SERVER=TRUE;MODE=PostgreSQL
         </property>
 
         <property name="hibernate.connection.username">sa</property>
