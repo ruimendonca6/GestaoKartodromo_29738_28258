@@ -1,125 +1,142 @@
 ﻿# Gestão de Kartódromo
 
-Projeto académico desenvolvido por **Rui Mendonça** e **Alexandre Silva**, com o objetivo de criar um sistema completo para gestão de um kartódromo.
+Projeto académico desenvolvido por **Rui Mendonça (29738)** e **Alexandre Silva (28258)** no âmbito da unidade curricular **Projeto II**, com o objetivo de criar um sistema completo para gestão operacional de um kartódromo.
 
-O projeto está organizado em módulos Java, incluindo uma aplicação Desktop e uma aplicação Web.
-
----
-
-## Membros do Grupo
-
-| Nº Aluno | Nome            | E-mail
-| -------- | --------------- | ---------------------------- 
-| 29738    | Rui Mendonça    | ruimendonca@ipvc.pt
-| 28258    | Alexandre Silva | alexandremiguelsilva@ipvc.pt
+O projeto foi desenvolvido utilizando uma arquitetura modular baseada em Maven, sendo composto por uma camada de negócio reutilizável (**kartodromo-core**), uma aplicação Desktop (**kartodromo-desktop**) e uma aplicação Web (**kartodromo-web**).
 
 ---
 
-## Estrutura do Projeto
+# Membros do Grupo
+
+| Nº Aluno | Nome            | E-mail                                                              |
+| -------- | --------------- | ------------------------------------------------------------------- |
+| 29738    | Rui Mendonça    | [ruimendonca@ipvc.pt](mailto:ruimendonca@ipvc.pt)                   |
+| 28258    | Alexandre Silva | [alexandremiguelsilva@ipvc.pt](mailto:alexandremiguelsilva@ipvc.pt) |
+
+---
+
+# Estrutura do Projeto
 
 ```text
 GestaoKartodromo_29738_28258/
 │
 ├── kartodromo-core/
-│   └── Módulo principal com regras de negócio, modelos, DAO e persistência
+│   ├── model/
+│   ├── dal/
+│   ├── bll/
+│   └── config/
 │
 ├── kartodromo-desktop/
-│   └── Aplicação Desktop desenvolvida em Java Swing
+│   ├── ui/
+│   ├── auth/
+│   └── relatorios/
 │
 ├── kartodromo-web/
-│   └── Aplicação Web desenvolvida em Java
+│   ├── auth/
+│   ├── config/
+│   ├── controller/
+│   ├── templates/
+│   ├── static/css/
+│   ├── static/js/
+│   └── static/images/
 │
 ├── data/
-│   └── Base de dados local H2
+│   └── kartodromo-db.mv.db
 │
 ├── pom.xml
-│   └── Ficheiro Maven principal
 │
 └── README.md
 ```
 
 ---
 
-## Tecnologias Utilizadas
+# Tecnologias Utilizadas
 
-* Java
-* Java Swing
-* Maven
+## Linguagens
+
+* Java 21
+* HTML5
+* CSS3
+* JavaScript
+
+## Frameworks e Bibliotecas
+
+* Spring Boot
+* Thymeleaf
 * Hibernate ORM
+* Jakarta Persistence
+* Apache PDFBox
+
+## Base de Dados
+
 * H2 Database
-* Java Web
+
+## Ferramentas
+
+* Maven
 * Git
 * GitHub
 * SourceTree
 * Trello
-* Apache PDFBox
+* Visual Studio Code
+* IntelliJ IDEA
 
 ---
 
-## Módulo `kartodromo-core`
+# Módulo kartodromo-core
 
-Contém a lógica principal da aplicação.
+Contém toda a lógica de negócio partilhada entre as aplicações Desktop e Web.
 
-Inclui:
+## Principais funcionalidades
 
-* Entidades/modelos
-* Serviços de negócio
-* DAO
-* Configuração Hibernate
+* Entidades JPA/Hibernate
+* Regras de negócio
 * Persistência de dados
+* DAOs genéricos e específicos
+* Serviços de negócio
+* Configuração Hibernate
 
-Principais pacotes:
+## Entidades
 
-```text
-pt.kartodromo.core.bll
-pt.kartodromo.core.dal
-pt.kartodromo.core.model
-pt.kartodromo.core.config
-```
+* Cliente
+* Utilizador
+* CategoriaKart
+* Kart
+* Reserva
+* Corrida
+* Resultado
+* Pista
+* Manutencao
 
----
+## Serviços
 
-## Módulo `kartodromo-desktop`
-
-Aplicação desktop desenvolvida em Java Swing.
-
-Funcionalidades implementadas:
-
-* Autenticação de utilizadores
-* Gestão de perfis
-* Dashboard
-* Gestão de clientes
-* Gestão de categorias
-* Gestão de karts
-* Gestão de corridas
-* Gestão de reservas
-* Gestão de pistas
-* Calendário
-* Disponibilidade
-* Manutenção
-* Histórico de corridas
-* Estatísticas
-* Notificações
-* Relatórios PDF
-* Perfil do utilizador
+* ClienteService
+* UtilizadorService
+* CategoriaKartService
+* KartService
+* ReservaService
+* CorridaService
+* ResultadoService
+* PistaService
+* ManutencaoService
+* NotificacaoService
 
 ---
 
-## Módulo `kartodromo-web`
+# Módulo kartodromo-desktop
 
-Módulo destinado à versão web da aplicação.
+Aplicação Desktop desenvolvida em Java Swing.
 
-Estrutura atual:
+## Funcionalidades Implementadas
 
-```text
-pt.kartodromo.web.auth
-pt.kartodromo.web.config
-pt.kartodromo.web.controller
-```
-
-Inclui controladores para:
+### Autenticação
 
 * Login
+* Controlo de permissões
+* Perfis ADMIN, FUNCIONARIO e CLIENTE
+
+### Gestão
+
 * Dashboard
 * Clientes
 * Categorias
@@ -130,25 +147,107 @@ Inclui controladores para:
 * Calendário
 * Disponibilidade
 * Manutenção
+* Resultados
 * Estatísticas
 * Notificações
-* Relatórios
+* Relatórios PDF
 * Utilizadores
 * Perfil
 
+### Estatísticas
+
+* Receita por período
+* Corridas realizadas
+* Taxa de cancelamento
+* Taxa de ocupação das pistas
+
 ---
 
-## Base de Dados
+# Módulo kartodromo-web
 
-O projeto utiliza base de dados local **H2** com persistência em ficheiro.
+Aplicação Web desenvolvida com Spring Boot e Thymeleaf.
 
-A base de dados é guardada na pasta:
+## Estrutura
+
+```text
+pt.kartodromo.web.auth
+pt.kartodromo.web.config
+pt.kartodromo.web.controller
+```
+
+## Controladores Implementados
+
+* LoginController
+* DashboardController
+* ClienteController
+* CategoriaController
+* KartController
+* CorridaController
+* ReservaController
+* PistaController
+* CalendarioController
+* DisponibilidadeController
+* ManutencaoController
+* ResultadoController
+* NotificacaoController
+* EstatisticasController
+* RelatoriosController
+* UtilizadoresController
+* PerfilController
+
+## Funcionalidades Web
+
+### Dashboard
+
+* Indicadores operacionais
+* Resumo diário
+* Estatísticas rápidas
+
+### Gestão Operacional
+
+* Clientes
+* Categorias
+* Karts
+* Corridas
+* Reservas
+* Pistas
+* Manutenção
+* Resultados
+* Utilizadores
+
+### Planeamento
+
+* Calendário
+* Disponibilidade
+
+### Relatórios e Estatísticas
+
+* Receita por período
+* Corridas realizadas
+* Reservas canceladas
+* Taxa de cancelamento
+* Taxa de ocupação por pista
+* Relatórios operacionais
+
+### Segurança
+
+* Autenticação baseada em sessão
+* Filtro de autenticação
+* Controlo de acesso por perfil
+
+---
+
+# Base de Dados
+
+O sistema utiliza uma base de dados H2 persistente em ficheiro.
+
+Localização:
 
 ```text
 data/
 ```
 
-Exemplo de configuração:
+Configuração:
 
 ```xml
 <property name="hibernate.connection.url">
@@ -158,103 +257,86 @@ Exemplo de configuração:
 
 ---
 
-## Branches Principais
+# Branches Principais
 
-### `main`
+## main
 
-Versão final estável.
+Versão estável e pronta para entrega.
 
-### `develop`
+## develop
 
-Ambiente principal de desenvolvimento.
+Branch principal de desenvolvimento.
 
-### `feature/nome-da-feature`
+## feature/*
 
-Branches usadas para desenvolvimento individual de funcionalidades.
+Branches dedicadas ao desenvolvimento de novas funcionalidades.
 
-Exemplo:
+Exemplos:
 
 ```bash
-feature/gestao-clientes
-feature/gestao-reservas
 feature/dashboard
+feature/reservas
+feature/pistas
+feature/estatisticas
+feature/web-auth
 ```
 
 ---
 
-## Processo de Trabalho
+# Estado Atual do Projeto
 
-Recomenda-se o uso do **SourceTree** para facilitar a gestão do Git.
+## Aplicação Desktop
 
-### 1. Criar uma branch a partir de `develop`
+Estado: Concluída
 
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feature/nome-da-feature
+Funcionalidades:
+
+* CRUD completo
+* Autenticação
+* Relatórios PDF
+* Estatísticas
+* Gestão operacional completa
+
+## Aplicação Web
+
+Estado: Concluída
+
+Funcionalidades:
+
+* Autenticação
+* Dashboard
+* Gestão de entidades
+* Calendário
+* Disponibilidade
+* Relatórios
+* Estatísticas avançadas
+* Gestão de utilizadores
+* Perfil
+
+---
+
+# Arquitetura
+
+O sistema segue uma arquitetura em camadas:
+
+```text
+UI
+│
+Controllers
+│
+BLL (Services)
+│
+DAL (DAO)
+│
+Hibernate ORM
+│
+H2 Database
 ```
 
----
-
-### 2. Trabalhar na funcionalidade
-
-Boas práticas:
-
-* Fazer commits frequentes;
-* Usar mensagens claras;
-* Testar antes de fazer commit;
-* Atualizar a branch com `develop` sempre que necessário.
-
-Exemplo:
-
-```bash
-git add .
-git commit -m "feat: add reservation management"
-```
+A camada de negócio encontra-se centralizada no módulo **kartodromo-core**, permitindo reutilização entre as versões Desktop e Web.
 
 ---
 
-### 3. Enviar a branch para o GitHub
+# Licença
 
-```bash
-git push origin feature/nome-da-feature
-```
-
----
-
-### 4. Integrar alterações
-
-Após terminar a funcionalidade:
-
-1. Criar Pull Request para `develop`;
-2. Rever alterações;
-3. Resolver conflitos;
-4. Fazer merge.
-
----
-
-## Estado Atual do Projeto
-
-### Versão Desktop
-
-Estado: concluída.
-
-Principais funcionalidades implementadas:
-
-* CRUD completo das entidades principais;
-* Autenticação persistente;
-* Controlo de permissões por perfil;
-* Dashboard personalizado;
-* Exportação de relatórios PDF;
-* Persistência de dados com H2;
-* Gestão operacional completa do kartódromo.
-
-### Versão Web
-
-Estado: em desenvolvimento.
-
----
-
-## Licença
-
-Projeto desenvolvido exclusivamente para fins académicos.
+Projeto desenvolvido exclusivamente para fins académicos no âmbito da unidade curricular Projeto II do curso de Engenharia Informática do Instituto Politécnico de Viana do Castelo.
