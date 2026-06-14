@@ -5,6 +5,7 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+
 import pt.kartodromo.core.model.CategoriaKart;
 import pt.kartodromo.core.model.Cliente;
 import pt.kartodromo.core.model.Corrida;
@@ -13,6 +14,7 @@ import pt.kartodromo.core.model.Manutencao;
 import pt.kartodromo.core.model.Pista;
 import pt.kartodromo.core.model.Reserva;
 import pt.kartodromo.core.model.Resultado;
+import pt.kartodromo.core.model.Utilizador;
 
 public final class HibernateUtil {
 
@@ -37,7 +39,8 @@ public final class HibernateUtil {
                     .addAnnotatedClass(Reserva.class)
                     .addAnnotatedClass(Pista.class)
                     .addAnnotatedClass(Manutencao.class)
-                    .addAnnotatedClass(Resultado.class);
+                    .addAnnotatedClass(Resultado.class)
+                    .addAnnotatedClass(Utilizador.class);
 
             Metadata metadata = sources.getMetadataBuilder().build();
             return metadata.getSessionFactoryBuilder().build();

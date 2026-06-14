@@ -7,9 +7,11 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -33,8 +35,11 @@ import pt.kartodromo.core.model.Kart;
 import pt.kartodromo.core.model.Reserva;
 import pt.kartodromo.core.model.enums.ReservaEstado;
 import pt.kartodromo.desktop.ui.UiStyle;
+import pt.kartodromo.desktop.ui.auth.AuthUser;
 
 public class ReservaPanel extends JPanel {
+
+    private final AuthUser authenticatedUser;
 
     private static final DateTimeFormatter DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -83,41 +88,48 @@ public class ReservaPanel extends JPanel {
                 }
             };
 
-    private final JTable reservasTable =
+        private final JTable reservasTable =
             new JTable(reservasTableModel);
 
-    public ReservaPanel() {
-        this(null);
-    }
-
-    public ReservaPanel(Runnable abrirPistasAction) {
-        this.abrirPistasAction = abrirPistasAction;
-
-        setLayout(new BorderLayout(20, 20));
-        setBackground(UiStyle.BACKGROUND_COLOR);
-        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
-
-        configureComboRenderers();
-
-        JPanel topPanel = new JPanel(new BorderLayout(0, 10));
-        topPanel.setOpaque(false);
-
-        topPanel.add(
-                UiStyle.createPageTitle("Reservas"),
-                BorderLayout.NORTH
-        );
-
-        topPanel.add(
-                UiStyle.createCard(buildForm()),
-                BorderLayout.CENTER
-        );
-
-        add(topPanel, BorderLayout.NORTH);
-        add(UiStyle.createCard(buildTable()), BorderLayout.CENTER);
-
-        refreshData();
+        public ReservaPanel() {
+                this(null, null);
         }
 
+        public ReservaPanel(Runnable abrirPistasAction) {
+                this(abrirPistasAction, null);
+        }
+
+        public ReservaPanel(
+                Runnable abrirPistasAction,
+                AuthUser authenticatedUser) {
+
+                this.abrirPistasAction = abrirPistasAction;
+                this.authenticatedUser = authenticatedUser;
+
+                setLayout(new BorderLayout(20, 20));
+                setBackground(UiStyle.BACKGROUND_COLOR);
+                setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+
+                configureComboRenderers();
+
+                JPanel topPanel = new JPanel(new BorderLayout(0, 10));
+                topPanel.setOpaque(false);
+
+                topPanel.add(
+                        UiStyle.createPageTitle("Reservas"),
+                        BorderLayout.NORTH
+                );
+
+                topPanel.add(
+                        UiStyle.createCard(buildForm()),
+                        BorderLayout.CENTER
+                );
+
+                add(topPanel, BorderLayout.NORTH);
+                add(UiStyle.createCard(buildTable()), BorderLayout.CENTER);
+
+                refreshData();
+        }
     private JPanel buildForm() {
         JButton criarButton =
                 UiStyle.createActionButton("+ Nova", UiStyle.CREATE_GREEN);
@@ -470,10 +482,36 @@ public class ReservaPanel extends JPanel {
     private void refreshClientes() {
         clienteCombo.removeAllItems();
 
-        for (Cliente cliente : clienteService.listarClientes()) {
-            clienteCombo.addItem(cliente);
+        List<Cliente> clientes = clienteService.listarClientes();
+
+        if (authenticatedUser != null && authenticatedUser.isCliente()) {
+                Cliente clienteAutenticado = clientes.stream()
+                        .filter(c ->
+                                c.getEmail() != null
+                                        && c.getEmail().equalsIgnoreCase(authenticatedUser.getEmail())
+                        )
+                        .findFirst()
+                        .orElseGet(() ->
+                                clienteService.criarCliente(
+                                        authenticatedUser.getUsername(),
+                                        LocalDate.of(2000, 1, 1),
+                                        authenticatedUser.getEmail(),
+                                        0
+                                )
+                        );
+
+                clienteCombo.addItem(clienteAutenticado);
+                clienteCombo.setSelectedItem(clienteAutenticado);
+                clienteCombo.setEnabled(false);
+                return;
         }
-    }
+
+        clienteCombo.setEnabled(true);
+
+        for (Cliente cliente : clientes) {
+                clienteCombo.addItem(cliente);
+        }
+        }
 
     private void refreshKarts() {
         kartCombo.removeAllItems();
@@ -486,24 +524,36 @@ public class ReservaPanel extends JPanel {
     private void refreshReservas() {
         reservasTableModel.setRowCount(0);
 
-        for (Reserva reserva : reservaService.listarReservas()) {
-            reservasTableModel.addRow(
-                    new Object[]{
-                            reserva.getId(),
-                            reserva.getCliente() != null
-                                    ? reserva.getCliente().getNome()
-                                    : "",
-                            reserva.getKart() != null
-                                    ? "Kart #" + reserva.getKart().getNumero()
-                                    : "",
-                            reserva.getPistaNome(),
-                            reserva.getDataHoraInicio().format(DATE_TIME_FORMAT),
-                            reserva.getDataHoraFim().format(DATE_TIME_FORMAT),
-                            reserva.getEstado()
-                    }
-            );
+        List<Reserva> reservas = reservaService.listarReservas();
+
+        if (authenticatedUser != null && authenticatedUser.isCliente()) {
+                reservas = reservas.stream()
+                        .filter(r ->
+                                r.getCliente() != null
+                                        && r.getCliente().getEmail() != null
+                                        && r.getCliente().getEmail().equalsIgnoreCase(authenticatedUser.getEmail())
+                        )
+                        .toList();
         }
-    }
+
+        for (Reserva reserva : reservas) {
+                reservasTableModel.addRow(
+                        new Object[]{
+                                reserva.getId(),
+                                reserva.getCliente() != null
+                                        ? reserva.getCliente().getNome()
+                                        : "",
+                                reserva.getKart() != null
+                                        ? "Kart #" + reserva.getKart().getNumero()
+                                        : "",
+                                reserva.getPistaNome(),
+                                reserva.getDataHoraInicio().format(DATE_TIME_FORMAT),
+                                reserva.getDataHoraFim().format(DATE_TIME_FORMAT),
+                                reserva.getEstado()
+                        }
+                );
+        }
+}
 
     private void configureComboRenderers() {
         clienteCombo.setRenderer(

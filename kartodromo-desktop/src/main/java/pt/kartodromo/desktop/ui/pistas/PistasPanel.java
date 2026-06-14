@@ -40,6 +40,8 @@ import pt.kartodromo.desktop.ui.UiStyle;
 
 public class PistasPanel extends JPanel {
 
+    private final boolean mostrarGestao;
+
     private static final Color ATIVA_COLOR =
             new Color(46, 125, 50);
 
@@ -110,34 +112,40 @@ public class PistasPanel extends JPanel {
                     new Color(245, 124, 0)
             );
 
-    public PistasPanel() {
-        this(null);
-    }
+            
 
-    public PistasPanel(Consumer<String> onPistaSelecionada) {
-        this.onPistaSelecionada = onPistaSelecionada;
+        public PistasPanel() {
+                this(null, true);
+        }
 
-        setLayout(new BorderLayout(0, 10));
-        setBackground(UiStyle.BACKGROUND_COLOR);
-        setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        public PistasPanel(Consumer<String> onPistaSelecionada) {
+                this(onPistaSelecionada, true);
+        }
 
-        JTabbedPane tabs = new JTabbedPane();
+        public PistasPanel(
+                Consumer<String> onPistaSelecionada,
+                boolean mostrarGestao) {
 
-        tabs.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.PLAIN,
-                        13
-                )
-        );
+                this.onPistaSelecionada = onPistaSelecionada;
+                this.mostrarGestao = mostrarGestao;
 
-        tabs.addTab("Pistas", buildCardsTab());
-        tabs.addTab("Gestão", buildGestaoTab());
+                setLayout(new BorderLayout(0, 10));
+                setBackground(UiStyle.BACKGROUND_COLOR);
+                setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
-        add(UiStyle.createPageTitle("Pistas"), BorderLayout.NORTH);
-        add(tabs, BorderLayout.CENTER);
+                JTabbedPane tabs = new JTabbedPane();
+                tabs.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
-        loadData();
+                tabs.addTab("Pistas", buildCardsTab());
+
+                if (mostrarGestao) {
+                        tabs.addTab("Gestão", buildGestaoTab());
+                }
+
+                add(UiStyle.createPageTitle("Pistas"), BorderLayout.NORTH);
+                add(tabs, BorderLayout.CENTER);
+
+                loadData();
         }
 
     private JScrollPane buildCardsTab() {
